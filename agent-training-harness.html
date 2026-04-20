@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Agent Harness：LLM 和 AI Agent 之间的关键中间层</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 30px;
+    color: #1a1a1a;
+  }
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #1a1a1a;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    background: #fff;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 1400px;
+    font-size: 13px;
+  }
+  thead th {
+    background: #1a237e;
+    color: #fff;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  thead th.tool-col {
+    background: #283593;
+    text-align: center;
+    border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  thead th.insight-col {
+    background: #004d40;
+    text-align: center;
+  }
+  tbody tr { border-bottom: 1px solid #eee; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafafa; }
+  tbody td {
+    padding: 10px 14px;
+    line-height: 1.6;
+    vertical-align: top;
+  }
+  tbody td:first-child {
+    font-weight: 700;
+    color: #1a237e;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .tool-cell {
+    border-left: 1px solid #f0f0f0;
+    text-align: left;
+  }
+  .insight-cell {
+    background: #e8f5e9;
+    text-align: left;
+  }
+  .tag {
+    display: inline-block;
+    background: #e8eaf6;
+    color: #1a237e;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 1px 1px;
+  }
+  .tag-green {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  .tag-orange {
+    background: #fff3e0;
+    color: #e65100;
+  }
+  .tag-red {
+    background: #ffebee;
+    color: #c62828;
+  }
+  .tag-blue {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  .tag-purple {
+    background: #f3e5f5;
+    color: #6a1b9a;
+  }
+  .yes { color: #2e7d32; font-weight: 700; }
+  .no { color: #c62828; font-weight: 700; }
+  .highlight {
+    background: #e3f2fd;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .section-header td {
+    background: #f5f5f5;
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    padding: 8px 14px;
+    border-bottom: 1px solid #ddd;
+  }
+  .footer-note {
+    margin-top: 16px;
+    padding: 12px 18px;
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .footer-note2 {
+    margin-top: 10px;
+    padding: 12px 18px;
+    background: #e3f2fd;
+    border-left: 4px solid #1565c0;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+  }
+  small { font-size: 11px; color: #888; }
+  .formula {
+    display: block;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a237e;
+    margin: 12px 0;
+    padding: 16px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    border: 2px dashed #c5cae9;
+  }
+  .arch-box {
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 12px;
+    background: #263238;
+    color: #eeffff;
+    padding: 14px 18px;
+    border-radius: 6px;
+    line-height: 1.5;
+    margin: 8px 0;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .arch-box .a { color: #ff9800; font-weight: 700; }
+  .arch-box .b { color: #66bb6a; }
+  .arch-box .c { color: #42a5f5; }
+  .arch-box .d { color: #ef5350; }
+  .arch-box .e { color: #ab47bc; }
+</style>
+</head>
+<body>
+
+<h1>Agent Harness：LLM 和 AI Agent 之间的关键中间层</h1>
+<p class="subtitle">理解 Harness = 理解为什么同一个模型在不同产品中表现天差地别 | 数据来源：parallel.ai, Anthropic, OpenAI, LangChain</p>
+
+<div class="formula">
+  AI Agent = LLM（大脑） + Harness（身体 + 工具 + 记忆 + 管控）
+</div>
+
+<!-- ========== 架构图 ========== -->
+<div class="table-wrap" style="margin-bottom: 20px;">
+<div class="arch-box"><span class="a">┌──────────────────────────────────────────────────────────────┐</span>
+<span class="a">│</span>                    <span class="a">AI Agent 产品（用户看到的）</span>                      <span class="a">│</span>
+<span class="a">│</span>          Claude Code / OpenCode / GitHub Copilot              <span class="a">│</span>
+<span class="a">├──────────────────────────────────────────────────────────────┤</span>
+<span class="e">│</span>                      <span class="e">Agent Harness（用户看不到但决定一切）</span>                <span class="e">│</span>
+<span class="e">│</span>  <span class="b">┌────────────┐</span>  <span class="c">┌────────────┐</span>  <span class="d">┌──────────────────┐</span>  <span class="e">│</span>
+<span class="e">│</span>  <span class="b">│ Agent Loop │</span>  <span class="c">│ Context /  │</span>  <span class="d">│  Verification &  │</span>  <span class="e">│</span>
+<span class="e">│</span>  <span class="b">│  (ReAct)   │</span>  <span class="c">│  Memory    │</span>  <span class="d">│   Guardrails    │</span>  <span class="e">│</span>
+<span class="e">│</span>  <span class="b">│  核心引擎  │</span>  <span class="c">│  上下文管理 │</span>  <span class="d">│   安全管控(Hook) │</span>  <span class="e">│</span>
+<span class="e">│</span>  <span class="b">└────────────┘</span>  <span class="c">└────────────┘</span>  <span class="d">└──────────────────┘</span>  <span class="e">│</span>
+<span class="e">│</span>  <span class="b">┌────────────┐</span>  <span class="c">┌────────────┐</span>  <span class="d">┌──────────────────┐</span>  <span class="e">│</span>
+<span class="e">│</span>  <span class="b">│    MCP     │</span>  <span class="c">│   Skills   │</span>  <span class="d">│    Planning      │</span>  <span class="e">│</span>
+<span class="e">│</span>  <span class="b">│  外部连接  │</span>  <span class="c">│  知识/工作流│</span>  <span class="d">│   任务拆解       │</span>  <span class="e">│</span>
+<span class="e">│</span>  <span class="b">└────────────┘</span>  <span class="c">└────────────┘</span>  <span class="d">└──────────────────┘</span>  <span class="e">│</span>
+<span class="a">├──────────────────────────────────────────────────────────────┤</span>
+<span class="a">│</span>                       <span class="a">LLM 大模型（大脑）</span>                            <span class="a">│</span>
+<span class="a">│</span>              Claude / GPT / Gemini / 本地模型                    <span class="a">│</span>
+<span class="a">└──────────────────────────────────────────────────────────────┘</span></div>
+</div>
+
+<!-- ========== 主表格 ========== -->
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:100px;">概念</th>
+      <th style="width:100px;">所处层次</th>
+      <th class="tool-col" style="width:240px;">一句话定义</th>
+      <th class="tool-col" style="width:240px;">做什么（类比）</th>
+      <th class="tool-col" style="width:260px;">与 Harness 的关系</th>
+      <th class="insight-col" style="width:260px;">对开发者的意义</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- Harness -->
+    <tr>
+      <td><strong>Harness</strong><br><small>代理运行时</small></td>
+      <td><span class="tag tag-purple">整个中间层</span></td>
+      <td class="tool-cell">包裹在 LLM 外面的<strong>完整软件基础设施</strong>，管理 LLM 自身之外的一切——工具调用、记忆、上下文、验证、循环</td>
+      <td class="tool-cell"><strong>Agent 的身体</strong><br>LLM 是大脑（只会生成文本），Harness 给它装上手（MCP 工具）、眼睛（观察结果）、记忆（上下文管理）、规矩（Hook 管控）。<br><br>没有 Harness，LLM 就是一个只会动嘴的专家</td>
+      <td class="tool-cell"><span class="tag tag-purple">Harness 本身</span><br>它是 MCP、Skill、Hook、Agent Loop、Memory 的<strong>容器和编排器</strong>。<br><br>Anthropic 官方称 Claude Agent SDK 为 "general-purpose agent harness"</td>
+      <td class="insight-cell"><strong>LLM 决定智商上限，Harness 决定能发挥多少。</strong><br><br>同一个 Claude Sonnet 模型：<br>· 裸 API 调用 → 只能问答<br>· 套上 Claude Code 的 Harness → 能自主写代码、调工具、管项目<br>· <strong>区别不在模型，在 Harness</strong></td>
+    </tr>
+
+    <!-- Agent Loop -->
+    <tr>
+      <td><strong>Agent Loop</strong><br><small>代理循环</small></td>
+      <td><span class="tag tag-green">核心引擎</span></td>
+      <td class="tool-cell">思考→行动→观察的<strong>迭代循环</strong>（ReAct 模式），驱动 Harness 不断运转直到任务完成</td>
+      <td class="tool-cell"><strong>Agent 的心跳</strong><br>每轮循环：LLM 思考下一步 → 执行工具 → 观察结果 → 再思考。<br><br>就像你排查 bug：猜原因→查日志→看报错→再猜→再查。<strong>Agent 干的跟你一样，只是快 100 倍</strong></td>
+      <td class="tool-cell">Agent Loop 是 Harness 的<strong>核心执行引擎</strong>。<br><br>Harness 负责"有工具可用、有记忆可查"，Agent Loop 负责<strong>一轮一轮地用这些资源</strong>去完成任务</td>
+      <td class="insight-cell">理解了 Agent Loop，就理解了为什么 Agent 比 ChatGPT 贵——<strong>一个问题可能跑 10 轮 LLM 推理</strong>，不是一轮</td>
+    </tr>
+
+    <!-- MCP -->
+    <tr>
+      <td><strong>MCP</strong><br><small>Model Context Protocol</small></td>
+      <td><span class="tag tag-blue">连接层</span></td>
+      <td class="tool-cell">Agent 连接外部系统的<strong>标准接口协议</strong>。让 Agent 能访问数据库、API、内部系统等</td>
+      <td class="tool-cell"><strong>Agent 的手</strong><br>LLM 只会动嘴（生成文本），MCP 让它能动手——能查日志、调 API、读数据库。<br><br>就像外卖小哥，脑子再好使，不给他电动车和手机也送不了外卖。<strong>MCP 就是电动车和手机</strong></td>
+      <td class="tool-cell">MCP 是 Harness 的<strong>外部连接子系统</strong>。<br><br>Harness 通过 MCP 管理所有外部工具的注册、发现、调用、权限。<strong>MCP 是 Harness 给 LLM 装的"手"</strong></td>
+      <td class="insight-cell">MCP 是开放标准——一个 MCP Server 开发一次，Claude Code / OpenCode / Copilot 都能用。<strong>你的投入不会白费</strong></td>
+    </tr>
+
+    <!-- Skill -->
+    <tr>
+      <td><strong>Skill</strong><br><small>技能/工作流</small></td>
+      <td><span class="tag tag-orange">知识层</span></td>
+      <td class="tool-cell">把重复操作<strong>固化为标准流程</strong>的指令包。教 Agent 一次，以后一键调用</td>
+      <td class="tool-cell"><strong>同事的 SOP</strong><br>你把排查 xMatter 的套路写成 SOP，以后谁拿到都能照着做。<br><br>Skill 就是这件事的 AI 版——<strong>你把解决问题的套路写成 Skill，Agent 以后无脑照着干</strong></td>
+      <td class="tool-cell">Skill 是 Harness 的<strong>知识管理子系统</strong>。<br><br>Harness 负责在合适的时机发现、加载、执行 Skill。<strong>Skill 让 Harness 越用越聪明</strong></td>
+      <td class="insight-cell">你教 Agent 一次，它记住一辈子。<strong>你的经验从"脑子里的直觉"变成"可分享的 Skill"</strong>——换项目换团队都能带走</td>
+    </tr>
+
+    <!-- Hook -->
+    <tr>
+      <td><strong>Hook</strong><br><small>钩子/拦截器</small></td>
+      <td><span class="tag tag-red">管控层</span></td>
+      <td class="tool-cell">Agent 执行动作<strong>前后的自动检查点</strong>。不符合规则直接拦住</td>
+      <td class="tool-cell"><strong>安检门</strong><br>MCP 让它能做，Skill 让它会做，<strong>Hook 决定它能不能做</strong>。想过关？先过检查</td>
+      <td class="tool-cell">Hook 是 Harness 的<strong>安全管控子系统</strong>。<br><br>Harness 在每次工具调用前后触发 Hook，实现自动 lint、测试、安全检查。<strong>Hook 让 Harness 可信</strong></td>
+      <td class="insight-cell">你不用时刻盯着 Agent 怕它搞事。<strong>把规则写进 Hook，它会自动遵守</strong>——永不疲倦的 Code Reviewer</td>
+    </tr>
+
+    <!-- Memory / Context -->
+    <tr>
+      <td><strong>Memory</strong><br><small>上下文管理</small></td>
+      <td><span class="tag tag-blue">记忆层</span></td>
+      <td class="tool-cell">管理 Agent 的<strong>短期记忆</strong>（对话上下文）和<strong>长期记忆</strong>（跨会话持久化），防止上下文溢出</td>
+      <td class="tool-cell"><strong>Agent 的笔记本</strong><br>短期记忆 = 正在开会时记的笔记<br>长期记忆 = 项目文档库里归档的资料<br><br>上下文压缩（Compaction）= 笔记写不下时提炼摘要</td>
+      <td class="tool-cell">Memory 是 Harness 的<strong>上下文管理子系统</strong>。<br><br>Harness 在每轮 Agent Loop 中决定：<strong>给 LLM 看什么、隐藏什么、压缩什么</strong>。这是 Harness 最复杂的工作之一</td>
+      <td class="insight-cell">上下文管理决定了 Agent 能处理多复杂的任务。<strong>CLAUDE.md / AGENTS.md 就是注入到 Memory 的"项目背景知识"</strong></td>
+    </tr>
+
+    <!-- Planning -->
+    <tr>
+      <td><strong>Planning</strong><br><small>任务规划</small></td>
+      <td><span class="tag tag-orange">规划层</span></td>
+      <td class="tool-cell">将复杂任务<strong>拆解为子任务</strong>，制定执行顺序，逐步完成</td>
+      <td class="tool-cell"><strong>项目经理</strong><br>用户说"重构认证模块"，Planning 把它拆成：① 分析现有代码 → ② 设计新方案 → ③ 逐文件修改 → ④ 运行测试 → ⑤ 提交 PR</td>
+      <td class="tool-cell">Planning 是 Harness 的<strong>任务编排子系统</strong>。<br><br>OpenCode 的 plan 代理、Claude Code 的 Subagents 都是 Planning 的实现。<strong>Planning 让 Harness 能处理复杂任务</strong></td>
+      <td class="insight-cell">没有 Planning 的 Agent 会"一口气干完"然后出错。<strong>有 Planning 的 Agent 会像靠谱的工程师一样分步骤来</strong></td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- ========== 实际案例表 ========== -->
+<h1 style="margin-top:30px; font-size:22px;">同一个模型 + 不同的 Harness = 截然不同的产品</h1>
+<p class="subtitle">这就是为什么 Harness Engineering 正在成为 AI 领域的独立学科</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:140px;">场景</th>
+      <th class="tool-col" style="width:280px;">没有 Harness（裸 LLM API）</th>
+      <th class="tool-col" style="width:280px;">有 Harness（Claude Code / OpenCode / Copilot）</th>
+      <th class="insight-col" style="width:280px;">区别在哪</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><strong>调用工具</strong></td>
+      <td class="tool-cell">LLM 只能生成文本建议"你可以运行 npm install"，但<strong>不会真的去运行</strong></td>
+      <td class="tool-cell">Harness 识别工具调用意图 → 通过 MCP 执行 → 结果反馈给 LLM → 继续推理</td>
+      <td class="insight-cell">Harness 让 LLM 从"纸上谈兵"变成<strong>"亲自动手"</strong></td>
+    </tr>
+
+    <tr>
+      <td><strong>多轮任务</strong></td>
+      <td class="tool-cell">LLM 一次性生成全部代码，<strong>无法根据运行结果调整</strong>。错了就全错了</td>
+      <td class="tool-cell">Agent Loop 让它写代码 → 运行 → 看报错 → 修改 → 再运行，<strong>循环迭代直到成功</strong></td>
+      <td class="insight-cell">Harness 让 LLM 从"一锤子买卖"变成<strong>"持续迭代"</strong></td>
+    </tr>
+
+    <tr>
+      <td><strong>长期项目</strong></td>
+      <td class="tool-cell">上下文窗口用完就忘记前面干了什么，<strong>下次开会从零开始</strong></td>
+      <td class="tool-cell">CLAUDE.md / AGENTS.md 提供项目记忆 + 自动 Compaction 压缩 + 跨会话持久化</td>
+      <td class="insight-cell">Harness 让 LLM 从"金鱼记忆"变成<strong>"有笔记本的工程师"</strong></td>
+    </tr>
+
+    <tr>
+      <td><strong>安全保障</strong></td>
+      <td class="tool-cell">LLM 可能建议不安全的代码，<strong>没有自动检查机制</strong></td>
+      <td class="tool-cell">Hook 在提交前自动 lint → 运行测试 → 安全扫描，不通过就拦截</td>
+      <td class="insight-cell">Harness 让 LLM 从"没人管的新人"变成<strong>"遵守规矩的老员工"</strong></td>
+    </tr>
+
+    <tr>
+      <td><strong>复用经验</strong></td>
+      <td class="tool-cell">每次都要从零教 LLM 你的团队规范，<strong>无法积累</strong></td>
+      <td class="tool-cell">Skill 固化最佳实践，新项目直接复用；MCP Server 开发一次三处可用</td>
+      <td class="insight-cell">Harness 让 LLM 从"临时工"变成<strong>"越来越强的团队成员"</strong></td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<div class="footer-note">
+  <strong>培训总结（一句话版）：</strong><br><br>
+  <strong>LLM 决定 Agent 的智商上限，Harness 决定 Agent 能发挥出多少智商。</strong><br><br>
+  Claude Code、OpenCode、GitHub Copilot 本质上是<strong>三个不同团队构建的三个不同的 Harness</strong>，它们可能使用相同的大模型（比如 Claude Sonnet），但因为 Harness 的实现不同，最终体验天差地别。<br><br>
+  你之前学习的 MCP、Skill、Hook、Agent Loop——<strong>它们都是 Harness 的子组件</strong>。理解了 Harness 这个全局概念，你就能理解为什么这些子组件缺一不可。
+</div>
+
+<!-- ========== 话题二：Harness 是新概念吗？ ========== -->
+<h1 style="margin-top:40px; font-size:22px;">话题二：Harness 到底是新概念还是换了个名字？</h1>
+<p class="subtitle">诚实地回答：它不是什么革命性新技术，而是一个"命名动作"——给一直存在的东西起了个新名字 | 但这个命名本身有工程意义</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:160px;">问题</th>
+      <th class="tool-col" style="width:420px;">事实</th>
+      <th class="insight-col" style="width:420px;">这意味着什么</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- 时间线 -->
+    <tr class="section-header">
+      <td colspan="3">时间线：AI 工程范式三次迁移（2022-2026）</td>
+    </tr>
+
+    <tr>
+      <td><strong>2022-2024</strong><br><span class="tag">Prompt Engineering</span></td>
+      <td class="tool-cell">
+        <strong>核心问题："怎么写提示词？"</strong><br>
+        大家相信提示词的质量决定了 Agent 的成败。代表产物：ChatGPT、早期 Copilot（单文件补全）<br><br>
+        <strong>死因：</strong>写得再好的提示词，如果 Agent 看不到项目中的工具函数，它还是会重复造轮子。<strong>这不是提示词问题，是信息问题。</strong>
+      </td>
+      <td class="insight-cell" rowspan="3" style="vertical-align:top;">
+        <strong>工程严谨性从未消失——它只是迁移到了更高的抽象层。</strong><br><br>
+        <span class="tag tag-orange">类比</span> 就像邮件系统的演进：<br>
+        · 2022：研究"怎么写一封好邮件"（Prompt）<br>
+        · 2025：研究"收件箱里放什么"（Context）<br>
+        · 2026：研究"设计整个邮件系统"（Harness）<br><br>
+        每个新阶段<strong>包含</strong>前一阶段，不是替代。Harness 仍然需要好的 Prompt 和好的 Context。<br><br>
+        <strong>关键人物：</strong><br>
+        · Mitchell Hashimoto（HashiCorp 创始人）2026.02 提出 Harness 概念<br>
+        · OpenAI、Martin Fowler、Wharton 教授 Ethan Mollick <strong>两周内同时独立发表</strong>相同结论<br>
+        · 学术界称之为"多重发现"——说明大家的认知同时到达了同一个节点
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>2025 年中</strong><br><span class="tag tag-blue">Context Engineering</span></td>
+      <td class="tool-cell">
+        <strong>核心问题："给什么信息？"</strong><br>
+        Shopify CEO Tobi Lütke 2025.06.19 一条推文引发行业词汇转换。Karpathy 随后定义："Context engineering is filling the context window with just the right information."<br><br>
+        代表产物：Cursor（全代码库索引 + RAG）、CLAUDE.md / AGENTS.md<br><br>
+        <strong>死因：</strong>上下文再完美，如果消费它的系统设计糟糕（循环逻辑差、错误恢复缺失、安全管控不足），照样失败。<strong>这不是信息问题，是系统问题。</strong>
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>2026 年 2 月</strong><br><span class="tag tag-purple">Harness Engineering</span></td>
+      <td class="tool-cell">
+        <strong>核心问题："设计什么系统？"</strong><br>
+        Mitchell Hashimoto 总结："Every time the agent makes a mistake, change the system so that mistake structurally cannot recur." ——<strong>不要修提示词，改系统</strong>。<br><br>
+        Martin Fowler 定义：<strong>Agent = Model + Harness</strong><br>
+        Anthropic 的 Claude Agent SDK 官方被称为 "general-purpose agent harness"<br><br>
+        <strong>至今仅 2 个月。还在早期。</strong>
+      </td>
+    </tr>
+
+    <!-- 核心问题 -->
+    <tr class="section-header">
+      <td colspan="3">核心问题：Harness 到底是不是新东西？</td>
+    </tr>
+
+    <tr>
+      <td><strong>它是什么？</strong></td>
+      <td class="tool-cell">
+        <strong>Harness = Agent 的"非模型部分"</strong><br><br>
+        它包含的就是你已经知道的东西：<br>
+        · Agent Loop（ReAct 循环）<br>
+        · MCP（工具连接）<br>
+        · Skills（知识复用）<br>
+        · Hooks（安全管控）<br>
+        · Memory（上下文管理）<br>
+        · Planning（任务拆解）<br>
+        · 权限系统、错误恢复、配置体系...<br><br>
+        <strong>没有一个是新发明的。Harness 就是这些已有实践的总称。</strong>
+      </td>
+      <td class="insight-cell">
+        <strong>你的直觉是对的：Harness 不是革命性突破。</strong><br><br>
+        它不是一个新工具、新框架或新技术。它是一个<strong>认知框架</strong>——帮我们更好地讨论和思考已有的实践。<br><br>
+        <span class="tag tag-red">不要神化</span> 媒体和自媒体确实在过度渲染。说"2025 Was Agents, 2026 Is Harnesses"更多是营销话术。<br><br>
+        <span class="tag tag-green">但有用</span> 这个概念确实帮我们回答了一个关键问题：<strong>"为什么同一个模型，在不同产品里表现天差地别？"</strong>——区别在 Harness。
+      </td>
+    </tr>
+
+    <!-- 真正的价值 -->
+    <tr class="section-header">
+      <td colspan="3">那造这个词到底有什么用？——不是炒作的 3 个真实工程价值</td>
+    </tr>
+
+    <tr>
+      <td><strong>价值 1</strong><br>区分模型能力 vs 系统能力</td>
+      <td class="tool-cell">
+        <strong>帮你回答一个实际问题：</strong><br><br>
+        "为什么同一个 Claude Sonnet 模型，在 Claude Code 里很强，在裸 API 里很弱？"——区别不在模型，在 Harness。<br><br>
+        同理：Claude Code vs OpenCode vs Copilot，用着<strong>相同的模型</strong>，体验完全不同。差异 100% 来自 Harness。
+      </td>
+      <td class="insight-cell">
+        <strong>选 Agent 工具时，别只看模型——看 Harness 质量。</strong><br><br>
+        这就是为什么我们之前用 11 个维度对比三个工具——那 11 个维度本质上都在对比 Harness 的质量。
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>价值 2</strong><br>有真实数据支撑</td>
+      <td class="tool-cell">
+        <strong>三个团队的实证：</strong><br><br>
+        <span class="tag tag-green">Manus</span> 用相同模型，<strong>5 次重写 Harness</strong>，每次效果显著提升。模型没换，换了 5 次周围系统。<br><br>
+        <span class="tag tag-green">Vercel</span> <strong>砍掉 80% 的工具后，Agent 效果反而变好了</strong>。更少的工具 = 更少的歧义 = 更少的错误。<br><br>
+        <span class="tag tag-green">OpenAI Codex 团队</span> 7 个工程师 5 个月写了 <strong>0 行手动代码</strong>，全靠设计 Harness 让 Agent 写了 100 万行代码。人类不再写代码，而是<strong>设计让 Agent 可靠地写代码的环境</strong>。
+      </td>
+      <td class="insight-cell">
+        <strong>Harness 的优化往往来自"减法"而非"加法"。</strong><br><br>
+        Vercel 的教训：给 Agent 太多工具反而让它困惑。好的 Harness 不是堆功能，而是<strong>只给必要的工具、只给必要的信息、只做必要的干预</strong>。
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>价值 3</strong><br>定义了工程师的新角色</td>
+      <td class="tool-cell">
+        <strong>工程师的角色正在变化：</strong><br><br>
+        <span class="tag tag-orange">旧角色</span> 写代码 → <span class="tag tag-blue">新角色</span> 设计让 Agent 可靠写代码的环境<br><br>
+        具体做什么：<br>
+        ① 把架构决策、编码规范写成 Agent 能读的文档（CLAUDE.md / AGENTS.md）<br>
+        ② 用自定义 linter 和测试<strong>机械地强制执行</strong>规则（而不是指望 Agent "自觉遵守"）<br>
+        ③ Agent 犯错时不修提示词——<strong>改系统让这个错不可能再发生</strong>
+      </td>
+      <td class="insight-cell">
+        <strong>每个 Agent 错误都是 Harness 的改进机会。</strong><br><br>
+        Hashimoto 的方法论：<br>
+        Agent 犯错 → 不是模型的问题 → 是 Harness 没防住 → <strong>改 Harness 让这类错误在结构上不可能再次发生</strong><br><br>
+        这就是"Harness Engineering"这个岗位的核心工作。
+      </td>
+    </tr>
+
+    <!-- 媒体炒作 vs 事实 -->
+    <tr class="section-header">
+      <td colspan="3">媒体炒作 vs 事实——培训时要澄清的误区</td>
+    </tr>
+
+    <tr>
+      <td><strong>需要澄清的</strong></td>
+      <td class="tool-cell">
+        <table style="width:100%; border:none; font-size:12px; margin:0;">
+          <tr style="border:none;">
+            <td style="padding:4px 8px; border:none; color:#c62828; font-weight:700; width:45%;">❌ 媒体说法</td>
+            <td style="padding:4px 8px; border:none; color:#2e7d32; font-weight:700;">✅ 事实</td>
+          </tr>
+          <tr style="border:none;">
+            <td style="padding:4px 8px; border:none;">"Harness 是 2026 年革命性新概念"</td>
+            <td style="padding:4px 8px; border:none;">它是一个已有实践的<strong>新命名</strong>，才出现 2 个月</td>
+          </tr>
+          <tr style="border:none;">
+            <td style="padding:4px 8px; border:none;">"Harness Engineering 是独立学科"</td>
+            <td style="padding:4px 8px; border:none;"><strong>为时尚早</strong>，目前更多是认知框架</td>
+          </tr>
+          <tr style="border:none;">
+            <td style="padding:4px 8px; border:none;">"Harness 让 Agent 突飞猛进"</td>
+            <td style="padding:4px 8px; border:none;">它不创造新能力，而是<strong>让已有能力更可靠</strong></td>
+          </tr>
+          <tr style="border:none;">
+            <td style="padding:4px 8px; border:none;">"模型是商品，Harness 是护城河"</td>
+            <td style="padding:4px 8px; border:none;"><strong>有一定道理但过于简化</strong>，模型质量仍然重要</td>
+          </tr>
+          <tr style="border:none;">
+            <td style="padding:4px 8px; border:none;">"Harness 是一个工具/框架/产品"</td>
+            <td style="padding:4px 8px; border:none;">它<strong>不是</strong>某个具体工具或产品。Claude Code 是一个产品，<br>它的 Harness 是产品内部的架构设计</td>
+          </tr>
+        </table>
+      </td>
+      <td class="insight-cell">
+        <strong>培训建议：不要把 Harness 当成独立新概念讲，而是当"总结性框架"用。</strong><br><br>
+        ① 先讲 MCP、Skill、Hook、Agent Loop 这些<strong>具体概念</strong>（你已经在做了）<br>
+        ② 最后用 Harness <strong>收尾总结</strong>："我们今天学的这些东西加在一起，业界统称为 Harness。Agent = 模型 + Harness。"<br>
+        ③ 核心信息只有一个：<strong>决定 Agent 好不好用的，不仅仅是模型，更是 Harness 的质量</strong>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<div class="footer-note2">
+  <strong>参考来源：</strong><br>
+  <a href="https://bits-bytes-nn.github.io/insights/agentic-ai/2026/04/05/evolution-of-ai-agentic-patterns-en.html">From Prompts to Harnesses: Four Years of AI Agentic Patterns</a>（最全面的综述，36 篇参考文献） ·
+  <a href="https://aakashgupta.medium.com/2025-was-agents-2026-is-agent-harnesses-heres-why-that-changes-everything-073e9877655e">2025 Was Agents, 2026 Is Agent Harnesses</a> ·
+  <a href="https://parallel.ai/articles/what-is-an-agent-harness">parallel.ai: What is an agent harness?</a> ·
+  <a href="https://openai.com/index/unrolling-the-codex-agent-loop/">OpenAI: Unrolling the Codex Agent Loop</a> ·
+  <a href="https://www.anthropic.com/news/enabling-claude-code-to-work-more-autonomously">Anthropic: Enabling Claude Code to work more autonomously</a>
+</div>
+
+</body>
+</html>

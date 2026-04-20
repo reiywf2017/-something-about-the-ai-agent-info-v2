@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI Coding Agent 三大工具对比：Claude Code / OpenCode / GitHub Copilot</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 30px;
+    color: #1a1a1a;
+  }
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #1a1a1a;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    background: #fff;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 1400px;
+    font-size: 13px;
+  }
+  thead th {
+    background: #1a237e;
+    color: #fff;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  thead th.tool-col {
+    background: #283593;
+    text-align: center;
+    border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  thead th.insight-col {
+    background: #004d40;
+    text-align: center;
+  }
+  tbody tr { border-bottom: 1px solid #eee; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafafa; }
+  tbody td {
+    padding: 10px 14px;
+    line-height: 1.6;
+    vertical-align: top;
+  }
+  tbody td:first-child {
+    font-weight: 700;
+    color: #1a237e;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .tool-cell {
+    border-left: 1px solid #f0f0f0;
+    text-align: left;
+  }
+  .insight-cell {
+    background: #e8f5e9;
+    text-align: left;
+  }
+  .tag {
+    display: inline-block;
+    background: #e8eaf6;
+    color: #1a237e;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 1px 1px;
+  }
+  .tag-green {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  .tag-orange {
+    background: #fff3e0;
+    color: #e65100;
+  }
+  .tag-red {
+    background: #ffebee;
+    color: #c62828;
+  }
+  .tag-blue {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  .yes { color: #2e7d32; font-weight: 700; }
+  .no { color: #c62828; font-weight: 700; }
+  .highlight {
+    background: #e3f2fd;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .section-header td {
+    background: #f5f5f5;
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    padding: 8px 14px;
+    border-bottom: 1px solid #ddd;
+  }
+  .footer-note {
+    margin-top: 16px;
+    padding: 12px 18px;
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .footer-note2 {
+    margin-top: 10px;
+    padding: 12px 18px;
+    background: #e3f2fd;
+    border-left: 4px solid #1565c0;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .star { color: #f9a825; }
+  .code-path {
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 11px;
+    background: #f5f5f5;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #333;
+  }
+  .price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a237e;
+  }
+  .price-free {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2e7d32;
+  }
+  small { font-size: 11px; color: #888; }
+  .toggle-btn {
+    display: block;
+    margin: 0 auto 16px auto;
+    padding: 8px 20px;
+    background: #1a237e;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-btn:hover { background: #283593; }
+  .toggle-btn.active { background: #b71c1c; }
+  .hidden-col { display: none; }
+</style>
+</head>
+<body>
+
+<h1>AI Coding Agent 三大工具全维度对比</h1>
+<p class="subtitle">Claude Code vs OpenCode vs GitHub Copilot | 11个评估维度 | 数据更新：2026年4月</p>
+
+<button class="toggle-btn active" onclick="toggleCols()">隐藏核心洞察列</button>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:90px;">评估维度</th>
+      <th class="tool-col" style="width:230px;">Claude Code</th>
+      <th class="tool-col" style="width:230px;">OpenCode</th>
+      <th class="tool-col" style="width:230px;">GitHub Copilot</th>
+      <th class="insight-col" style="width:200px;">核心洞察</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- ==================== 一、基础能力 ==================== -->
+    <tr class="section-header">
+      <td colspan="5">一、基础能力</td>
+    </tr>
+
+    <!-- 1. 模型灵活性 -->
+    <tr>
+      <td>1. 模型灵活性</td>
+      <td class="tool-cell">
+        <span class="tag tag-red">绑定 Anthropic</span><br>
+        仅支持 Claude 系列模型（Sonnet 4.5 / Opus 4.7）<br>
+        <small>无法切换到 GPT、Gemini 等其他厂商模型</small>
+      </td>
+      <td class="tool-cell">
+        <span class="tag tag-green">完全自由</span><br>
+        75+ 模型提供商：Claude、GPT、Gemini、本地模型（Ollama）<br>
+        <small>通过 <span class="code-path">opencode.json</span> 切换 <span class="code-path">model</span> 字段即可</small>
+      </td>
+      <td class="tool-cell">
+        <span class="tag tag-blue">多模型选择</span><br>
+        GPT-5 mini（默认）、Claude、Gemini 等<br>
+        <small>不同套餐可用模型不同；Cloud Agent 支持委托给 Claude / OpenAI Codex</small>
+      </td>
+      <td class="insight-cell">
+        <strong>OpenCode 最自由</strong>，可随时切换模型，不被任何厂商锁定。Copilot 也已开放多模型。Claude Code 唯一绑定单一厂商。
+      </td>
+    </tr>
+
+    <!-- 2. 工作面覆盖 -->
+    <tr>
+      <td>2. 工作面覆盖</td>
+      <td class="tool-cell">
+        <span class="tag tag-green">全平台</span><br>
+        Terminal <span class="tag">核心</span> · VS Code · JetBrains · 桌面App · 浏览器 · iOS<br>
+        <small>终端是原生体验，IDE 扩展为补充</small>
+      </td>
+      <td class="tool-cell">
+        <span class="tag tag-orange">终端为主</span><br>
+        Terminal <span class="tag">核心</span> · Desktop App（Preview）<br>
+        <small>无 IDE 扩展；可通过 <span class="code-path">opencode serve</span> 提供 Web 界面</small>
+      </td>
+      <td class="tool-cell">
+        <span class="tag tag-green">全平台</span><br>
+        VS Code <span class="tag">核心</span> · Visual Studio · JetBrains · Xcode · Neovim · CLI · GitHub.com · 移动端<br>
+        <small>IDE 是原生体验，CLI 为补充</small>
+      </td>
+      <td class="insight-cell">
+        <strong>Copilot 覆盖面最广</strong>（8+ IDE + Web + 移动端）。Claude Code 次之。OpenCode 目前专注终端场景。
+      </td>
+    </tr>
+
+    <!-- 3. 自主能力 -->
+    <tr>
+      <td>3. 自主能力等级</td>
+      <td class="tool-cell">
+        <span class="yes">L3 自主代理</span><br>
+        Subagents（并行子任务） · Hooks（自动触发器） · Background Tasks（后台进程） · Checkpoints（自动回退点）<br>
+        <small>可并行开发：前端子代理 + 后端子代理同时工作</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">L3 自主代理</span><br>
+        自定义代理（.opencode/agents/） · Plugin 事件系统（20+ 事件） · 多轮自动执行<br>
+        <small>Plugin 可拦截所有关键操作，实现类似 Hook 的自动化</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">L3 自主代理</span><br>
+        Agent Mode（IDE 内自主编辑） · Cloud Agent（云端自主执行，生成 PR） · Copilot CLI（终端自主工作流）<br>
+        <small>Cloud Agent 可在 GitHub Actions 中后台运行，不阻塞本地</small>
+      </td>
+      <td class="insight-cell">
+        <strong>三者均达 L3</strong>。差异在执行环境：Claude Code 本地并行、OpenCode 插件驱动、Copilot 云端委托。
+      </td>
+    </tr>
+
+    <!-- 4. 上下文理解 -->
+    <tr>
+      <td>4. 上下文理解</td>
+      <td class="tool-cell">
+        <span class="yes">代码库级</span><br>
+        自动扫描整个项目结构 · CLAUDE.md 提供项目上下文 · 自动记忆（~/.claude/projects/）跨会话保留<br>
+        <small>被认为是三者中代码理解能力最强的</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">代码库级</span><br>
+        自动扫描项目 · AGENTS.md 提供项目上下文 · LSP 集成（代码跳转、引用分析）<br>
+        <small>LSP 支持使其理解代码语义，不仅仅是文本匹配</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">文件级 + 项目级</span><br>
+        当前文件 + 工作区上下文 · Enterprise 支持代码库索引 · <span class="code-path">copilot-instructions.md</span> 项目指令<br>
+        <small>免费版/Pro 版上下文窗口较小；Enterprise 版支持组织级知识库</small>
+      </td>
+      <td class="insight-cell">
+        <strong>Claude Code 代码理解口碑最佳</strong>。OpenCode 有 LSP 加持。Copilot Enterprise 版才有深度索引。
+      </td>
+    </tr>
+
+    <!-- ==================== 二、生态与集成 ==================== -->
+    <tr class="section-header">
+      <td colspan="5">二、生态与集成</td>
+    </tr>
+
+    <!-- 5. 生态集成 -->
+    <tr>
+      <td>5. 生态集成度</td>
+      <td class="tool-cell">
+        GitHub · GitLab CI/CD · Slack · Chrome · Telegram · Discord · MCP Server<br>
+        <small>通过 MCP 连接几乎任何外部系统；GitHub 集成支持 PR 审查和 Issue 处理</small>
+      </td>
+      <td class="tool-cell">
+        GitHub（<span class="code-path">/opencode</span> 触发） · MCP Server · Plugin 生态<br>
+        <small>社区 Plugin 列表（awesome-opencode）；MCP 连接外部系统</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">GitHub 原生深度集成</span> · Actions · PR Review · Issue · GitHub MCP Registry<br>
+        <small>唯一一个在 GitHub.com 内直接可用的 Agent；Cloud Agent 在 Actions 中后台执行</small>
+      </td>
+      <td class="insight-cell">
+        <strong>Copilot = GitHub 生态无缝融合</strong>。Claude Code 连接最广（MCP 生态大）。OpenCode 依赖社区插件。
+      </td>
+    </tr>
+
+    <!-- 6. 可定制性 -->
+    <tr>
+      <td>6. 可定制性</td>
+      <td class="tool-cell">
+        <span class="yes">高度可定制</span><br>
+        CLAUDE.md · rules/*.md · Hooks · Subagents · Skills · Agent SDK<br>
+        <small>可通过 Claude Agent SDK 构建完全自定义的代理应用</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">终极可定制（开源）</span><br>
+        AGENTS.md · Plugin 系统 · 自定义代理 · 自定义命令 · 可修改源码<br>
+        <small>100% 开源，理论上可改任何行为</small>
+      </td>
+      <td class="tool-cell">
+        <span class="tag tag-blue">中等</span><br>
+        copilot-instructions.md · Skills · 自定义代理 · MCP 服务器<br>
+        <small>企业版可通过 Admin 管理策略；但核心不可修改</small>
+      </td>
+      <td class="insight-cell">
+        <strong>OpenCode 开源 = 无上限</strong>。Claude Code 定制体系最丰富（SDK + Hooks + Subagents）。Copilot 受限于平台管控。
+      </td>
+    </tr>
+
+    <!-- ==================== 三、MCP & Skills ==================== -->
+    <tr class="section-header">
+      <td colspan="5">三、MCP & Skills（核心 Agent 概念）</td>
+    </tr>
+
+    <!-- 9. MCP -->
+    <tr>
+      <td>9. MCP 支持度</td>
+      <td class="tool-cell">
+        <span class="yes">MCP 创始者</span><br>
+        <strong>配置文件：</strong><span class="code-path">.mcp.json</span>（项目级）<br>
+        <span class="code-path">~/.claude.json</span> 中 mcpServers（用户级）<br>
+        <strong>命令行：</strong><span class="code-path">claude mcp add &lt;name&gt;</span><br>
+        <strong>安全：</strong>权限通配符 <span class="code-path">mcp__server__*</span><br>
+        <small>Anthropic 制定了 MCP 协议，生态最成熟</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">完整支持</span><br>
+        <strong>配置文件：</strong><span class="code-path">opencode.json</span> 中 <span class="code-path">"mcp": {...}</span><br>
+        <strong>支持变量替换：</strong><span class="code-path">{env:API_KEY}</span> 避免硬编码<br>
+        <strong>支持远程 MCP：</strong><span class="code-path">"type": "remote"</span><br>
+        <small>与 Claude Code MCP Server 格式兼容</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">已 GA</span><br>
+        <strong>配置文件：</strong><span class="code-path">.vscode/mcp.json</span>（IDE）<br>
+        <span class="code-path">~/.copilot/mcp-config.json</span>（CLI）<br>
+        <strong>注册表：</strong>GitHub MCP Registry（官方审核）<br>
+        <strong>安全：</strong>企业 Allow List 管控<br>
+        <small>2025年已全面废除 Copilot Extensions，转向 MCP</small>
+      </td>
+      <td class="insight-cell">
+        <strong>三者均支持 MCP，配置互通</strong>。一个 MCP Server 三者都能用。Copilot 有官方 Registry 最安全，Claude Code 有 CLI 命令最便捷，OpenCode 变量替换最灵活。
+      </td>
+    </tr>
+
+    <!-- 10. Skills -->
+    <tr>
+      <td>10. Skills 扩展性</td>
+      <td class="tool-cell">
+        <span class="yes">最成熟的 Skills 体系</span><br>
+        <strong>项目级：</strong><span class="code-path">.claude/skills/&lt;name&gt;/SKILL.md</span><br>
+        <strong>用户级：</strong><span class="code-path">~/.claude/skills/&lt;name&gt;/SKILL.md</span><br>
+        <strong>企业级：</strong>Managed Settings 推送<br>
+        <strong>高级特性：</strong><br>
+        · 自动/手动调用控制<br>
+        · 子代理执行（<span class="code-path">context: fork</span>）<br>
+        · 动态上下文注入（<span class="code-path">!`command`</span>）<br>
+        · 权限预批准（<span class="code-path">allowed-tools</span>）
+      </td>
+      <td class="tool-cell">
+        <span class="yes">兼容 Claude Code Skills</span><br>
+        <strong>项目级：</strong><span class="code-path">.claude/skills/&lt;name&gt;/SKILL.md</span><br>
+        <strong>自定义命令：</strong><span class="code-path">.opencode/commands/*.md</span><br>
+        <strong>用户级：</strong><span class="code-path">~/.config/opencode/commands/</span><br>
+        <strong>Plugin 系统：</strong><span class="code-path">.opencode/plugins/</span> + npm<br>
+        <small>通过 <span class="code-path">OPENCODE_DISABLE_CLAUDE_CODE_SKILLS</span> 环境变量可禁用兼容</small>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">已正式支持</span><br>
+        <strong>项目级：</strong><span class="code-path">.github/skills/&lt;name&gt;/SKILL.md</span><br>
+        <strong>官方仓库：</strong>github.com/microsoft/skills<br>
+        <strong>也兼容：</strong><span class="code-path">.claude/skills/</span><br>
+        <strong>Cloud Agent：</strong>可在 GitHub Actions 中使用 Skills<br>
+        <small>遵循 Agent Skills 开放标准</small>
+      </td>
+      <td class="insight-cell">
+        <strong>Skills 三者格式趋同</strong>，均使用 SKILL.md + 目录结构。Claude Code 高级特性最多。迁移成本低——同一套 Skills 可在三个工具间复用。
+      </td>
+    </tr>
+
+    <!-- ==================== 四、工程化配置 ==================== -->
+    <tr class="section-header">
+      <td colspan="5">四、工程化配置（团队落地关键）</td>
+    </tr>
+
+    <!-- 11.1 启动上下文 -->
+    <tr>
+      <td>11a. 启动上下文</td>
+      <td class="tool-cell">
+        <strong>文件：</strong><span class="code-path">CLAUDE.md</span><br>
+        <strong>分层：</strong><br>
+        · 项目：<span class="code-path">./CLAUDE.md</span>（提交Git）<br>
+        · 私有：<span class="code-path">./CLAUDE.local.md</span>（gitignore）<br>
+        · 全局：<span class="code-path">~/.claude/CLAUDE.md</span><br>
+        · 规则：<span class="code-path">.claude/rules/*.md</span>
+      </td>
+      <td class="tool-cell">
+        <strong>文件：</strong><span class="code-path">AGENTS.md</span>（首选）<br>
+        <strong>分层：</strong><br>
+        · 项目：<span class="code-path">./AGENTS.md</span><br>
+        · 全局：<span class="code-path">~/.config/opencode/AGENTS.md</span><br>
+        · 兼容回退：<span class="code-path">CLAUDE.md</span><br>
+        <strong>自动生成：</strong><span class="code-path">/init</span> 命令扫描项目
+      </td>
+      <td class="tool-cell">
+        <strong>文件：</strong><span class="code-path">.github/copilot-instructions.md</span><br>
+        <strong>仅项目级</strong>，无全局/私有覆盖<br>
+        <small>最简单的方案，但灵活性最低</small>
+      </td>
+      <td class="insight-cell">
+        <strong>Claude Code 分层最精细</strong>（4层）。OpenCode 有 /init 自动生成且兼容 CLAUDE.md。Copilot 仅单层。
+      </td>
+    </tr>
+
+    <!-- 11.2 配置体系 -->
+    <tr>
+      <td>11b. 配置分层</td>
+      <td class="tool-cell">
+        <strong>5 层优先级</strong>（后者覆盖前者）：<br>
+        ① 默认值<br>
+        ② <span class="code-path">~/.claude/settings.json</span>（全局）<br>
+        ③ <span class="code-path">.claude/settings.json</span>（项目）<br>
+        ④ <span class="code-path">.claude/settings.local.json</span>（私有）<br>
+        ⑤ Managed Settings（企业，不可覆盖）
+      </td>
+      <td class="tool-cell">
+        <strong>6 层优先级</strong>（后者覆盖前者）：<br>
+        ① .opencode/ 目录<br>
+        ② <span class="code-path">opencode.json</span>（项目）<br>
+        ③ <span class="code-path">OPENCODE_CONFIG</span>（自定义路径）<br>
+        ④ <span class="code-path">~/.config/opencode/opencode.json</span>（全局）<br>
+        ⑤ 远程 <span class="code-path">.well-known/opencode</span>（组织）<br>
+        ⑥ <span class="code-path">OPENCODE_CONFIG_CONTENT</span>（运行时）
+      </td>
+      <td class="tool-cell">
+        <strong>分散管理，无统一分层</strong><br>
+        · IDE 设置（VS Code / JetBrains 各自管理）<br>
+        · CLI：<span class="code-path">~/.copilot/mcp-config.json</span><br>
+        · 企业：GitHub Admin 管理控制台<br>
+        <small>GUI 为主，工程化配置不够透明</small>
+      </td>
+      <td class="insight-cell">
+        <strong>Claude Code 和 OpenCode 均有清晰的文件级分层</strong>，适合 Git 版本化管理。Copilot 依赖 GUI，工程化透明度不足。
+      </td>
+    </tr>
+
+    <!-- 11.3 目录结构 -->
+    <tr>
+      <td>11c. 目录结构</td>
+      <td class="tool-cell">
+        <span class="code-path">.claude/</span><br>
+        ├── settings.json<br>
+        ├── settings.local.json<br>
+        ├── rules/*.md<br>
+        ├── skills/&lt;name&gt;/SKILL.md<br>
+        ├── commands/*.md<br>
+        └── agents/*.md<br>
+        <span class="code-path">~/.claude/</span><br>
+        ├── CLAUDE.md<br>
+        ├── skills/<br>
+        ├── plugins/<br>
+        └── projects/&lt;p&gt;/memory/
+      </td>
+      <td class="tool-cell">
+        <span class="code-path">.opencode/</span><br>
+        ├── agents/<br>
+        ├── commands/<br>
+        └── plugins/<br>
+        <span class="code-path">~/.config/opencode/</span><br>
+        ├── opencode.json<br>
+        ├── AGENTS.md<br>
+        ├── agents/<br>
+        ├── commands/<br>
+        └── plugins/<br>
+        <small>兼容读取 <span class="code-path">.claude/skills/</span></small>
+      </td>
+      <td class="tool-cell">
+        <span class="code-path">.github/</span><br>
+        ├── copilot-instructions.md<br>
+        └── skills/&lt;name&gt;/SKILL.md<br>
+        <span class="code-path">.vscode/</span><br>
+        └── mcp.json<br>
+        <span class="code-path">~/.copilot/</span><br>
+        └── mcp-config.json<br>
+        <small>结构最简单，但也最受限</small>
+      </td>
+      <td class="insight-cell">
+        <strong>OpenCode 兼容 Claude Code 目录</strong>，迁移几乎零成本。三者均支持 Git 提交团队共享。
+      </td>
+    </tr>
+
+    <!-- 11.4 诊断能力 -->
+    <tr>
+      <td>11d. 诊断与调试</td>
+      <td class="tool-cell">
+        <span class="yes">8 个诊断命令</span><br>
+        <span class="code-path">/context</span> 查看加载的上下文<br>
+        <span class="code-path">/memory</span> 查看记忆<br>
+        <span class="code-path">/mcp</span> MCP 连接状态<br>
+        <span class="code-path">/skills</span> 可用技能<br>
+        <span class="code-path">/agents</span> 子代理配置<br>
+        <span class="code-path">/hooks</span> Hook 状态<br>
+        <span class="code-path">/permissions</span> 权限规则<br>
+        <span class="code-path">/doctor</span> 全面诊断
+      </td>
+      <td class="tool-cell">
+        <span class="tag tag-orange">基础</span><br>
+        <span class="code-path">/plugins</span> 查看已安装插件<br>
+        <small>诊断能力相对薄弱，依赖手动检查配置文件</small>
+      </td>
+      <td class="tool-cell">
+        <span class="tag tag-orange">基础</span><br>
+        IDE 内查看 MCP 连接状态<br>
+        <small>主要通过 GUI 查看，无命令行诊断工具</small>
+      </td>
+      <td class="insight-cell">
+        <strong>Claude Code 可观测性遥遥领先</strong>。出了问题能快速定位是上下文、MCP、还是权限的问题。
+      </td>
+    </tr>
+
+    <!-- ==================== 五、成本与安全 ==================== -->
+    <tr class="section-header">
+      <td colspan="5">五、成本与安全</td>
+    </tr>
+
+    <!-- 7. 套餐与定价 -->
+    <tr>
+      <td>7. 套餐与定价</td>
+      <td class="tool-cell">
+        <span class="tag tag-red">无免费版</span> 需 Anthropic 付费订阅<br><br>
+        <strong>Claude Pro</strong> <span class="price">$20/月</span><br>
+        适合轻度使用；Agent 额度有限<br>
+        <a href="https://www.anthropic.com/pricing" style="font-size:11px;">anthropic.com/pricing</a><br><br>
+        <strong>Claude Max 5x</strong> <span class="price">$100/月</span><br>
+        5x Opus 配额，Sonnet 不限量<br><br>
+        <strong>Claude Max 20x</strong> <span class="price">$200/月</span><br>
+        20x Opus 配额，适合重度 Agent 用户<br>
+        <a href="https://www.ssdnodes.com/blog/claude-code-pricing-in-2026-every-plan-explained-pro-max-api-teams/" style="font-size:11px;">定价详解 (ssdnodes.com)</a><br>
+        <small>也可通过 API 按量付费，但成本更高（约 $3,650/月全量使用）</small>
+      </td>
+      <td class="tool-cell">
+        <span class="price-free">免费开源</span><br>
+        100% 开源，自带免费模型<br><br>
+        <strong>Free</strong> <span class="price-free">$0</span><br>
+        开源模型无限使用；需自备 API Key 连接商业模型<br><br>
+        <strong>OpenCode Go</strong> <span class="price">$5→$10/月</span><br>
+        GLM-5 / Kimi K2.5 / MiniMax M2.5<br>
+        <a href="https://opencode.ai/go" style="font-size:11px;">opencode.ai/go</a><br><br>
+        <strong>OpenCode Black</strong> <span class="price">暂停注册</span><br>
+        Claude + GPT + Gemini 全模型<br>
+        <a href="https://opencode.ai/black" style="font-size:11px;">opencode.ai/black</a>
+      </td>
+      <td class="tool-cell">
+        <span class="tag tag-green">有免费版</span> 5 个套餐层级<br><br>
+        <strong>Free</strong> <span class="price-free">$0</span><br>
+        2,000 补全 / 50 Chat 请求<br>
+        <a href="https://github.com/features/copilot/plans" style="font-size:11px;">github.com/.../plans</a><br><br>
+        <strong>Pro</strong> <span class="price">$10/月</span><br>
+        无限补全 + Agent Mode + 代码审查<br><br>
+        <strong>Pro+</strong> <span class="price">$39/月</span><br>
+        更多模型 + 更多代理<br><br>
+        <strong>Business</strong> <span class="price">$19/用户/月</span><br>
+        组织管理 + IP 赔偿<br><br>
+        <strong>Enterprise</strong> <span class="price">$39/用户/月</span><br>
+        代码库索引 + 私有模型
+      </td>
+      <td class="insight-cell">
+        <strong>OpenCode 门槛最低</strong>（免费+开源）。<strong>Copilot 免费版</strong>适合体验。<strong>Claude Code 无免费版</strong>，但 $20/月 Pro 入门也不贵。重度用户对比：Copilot Pro+ $39 vs Claude Max $100 vs OpenCode Go $10。
+      </td>
+    </tr>
+
+    <!-- 8. 数据安全 -->
+    <tr>
+      <td>8. 数据安全</td>
+      <td class="tool-cell">
+        · 遵循 Anthropic 隐私政策<br>
+        · 不使用付费用户数据训练模型<br>
+        · 可通过 <span class="code-path">CLAUDE.md</span> 控制敏感文件访问<br>
+        · 企业版支持 SSO / SCIM<br>
+        <a href="https://www.anthropic.com/privacy" style="font-size:11px;">anthropic.com/privacy</a>
+      </td>
+      <td class="tool-cell">
+        <span class="yes">数据完全可控</span><br>
+        · 100% 开源，可审计所有代码<br>
+        · 支持本地模型（零数据外传）<br>
+        · 支持 <span class="code-path">{env:VAR}</span> 避免密钥硬编码<br>
+        · 可私有化部署<br>
+        <a href="https://github.com/anomalyco/opencode" style="font-size:11px;">github.com/anomalyco/opencode</a>
+      </td>
+      <td class="tool-cell">
+        · <strong>Free/Pro/Pro+</strong>：默认可能用于训练，可 opt-out<br>
+        · <strong>Business/Enterprise</strong>：不用于训练<br>
+        · 企业 Allow List 管控 MCP 访问<br>
+        · SOC 2 / GDPR 合规<br>
+        <a href="https://docs.github.com/en/copilot/concepts/billing/individual-plans" style="font-size:11px;">docs.github.com/.../individual-plans</a>
+      </td>
+      <td class="insight-cell">
+        <strong>OpenCode 数据主权最强</strong>（开源+本地模型）。Copilot 企业版管控成熟。注意：Copilot 个人免费版默认数据可用于训练。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<div class="footer-note">
+  <strong>一句话总结：</strong><br>
+  <strong>Copilot = 平台型</strong>，依托 GitHub 生态，多模型多代理，企业管控最强，适合已深度使用 GitHub 的团队。<br>
+  <strong>Claude Code = 能力型</strong>，单模型深度优化，工程化体系最成熟，代码理解最强，适合追求极致开发效率的个人和团队。<br>
+  <strong>OpenCode = 自由型</strong>，开源免费，模型不限，社区驱动，兼容 Claude Code 生态，适合预算敏感和追求灵活性的团队。<br><br>
+  <strong>选型建议：</strong>已有 GitHub Enterprise → Copilot；追求代码质量 → Claude Code；预算有限/需要灵活性 → OpenCode。三者均支持 MCP，MCP Server 开发一次三处可用。
+</div>
+
+<div class="footer-note2">
+  <strong>数据来源（2026年4月）：</strong><br>
+  GitHub Copilot 官方定价页：<a href="https://github.com/features/copilot/plans">github.com/features/copilot/plans</a> ·
+  Claude Code 定价分析：<a href="https://www.ssdnodes.com/blog/claude-code-pricing-in-2026-every-plan-explained-pro-max-api-teams/">ssdnodes.com</a> ·
+  OpenCode 官方文档：<a href="https://opencode.ai/docs/config/">opencode.ai/docs</a> ·
+  Anthropic 官方博客：<a href="https://www.anthropic.com/news/enabling-claude-code-to-work-more-autonomously">anthropic.com/news</a> ·
+  GitHub Copilot Skills 文档：<a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills">docs.github.com</a>
+</div>
+
+<script>
+function toggleCols() {
+  var cols = document.querySelectorAll('.insight-col, .insight-cell');
+  var btn = document.querySelector('.toggle-btn');
+  cols.forEach(function(col) {
+    col.classList.toggle('hidden-col');
+  });
+  if (btn.classList.contains('active')) {
+    btn.textContent = '显示核心洞察列';
+    btn.classList.remove('active');
+  } else {
+    btn.textContent = '隐藏核心洞察列';
+    btn.classList.add('active');
+  }
+}
+</script>
+
+</body>
+</html>

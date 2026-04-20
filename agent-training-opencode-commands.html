@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>OpenCode 命令大全：CLI命令 + 内置工具 + 内置代理 + 斜杠命令</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 30px;
+    color: #1a1a1a;
+  }
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #1a1a1a;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    background: #fff;
+    margin-bottom: 30px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 1400px;
+    font-size: 13px;
+  }
+  thead th {
+    background: #1a237e;
+    color: #fff;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  thead th.tool-col {
+    background: #283593;
+    text-align: center;
+    border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  thead th.insight-col {
+    background: #004d40;
+    text-align: center;
+  }
+  tbody tr { border-bottom: 1px solid #eee; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafafa; }
+  tbody td {
+    padding: 10px 14px;
+    line-height: 1.6;
+    vertical-align: top;
+  }
+  tbody td:first-child {
+    font-weight: 700;
+    color: #1a237e;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .tool-cell {
+    border-left: 1px solid #f0f0f0;
+    text-align: left;
+  }
+  .insight-cell {
+    background: #e8f5e9;
+    text-align: left;
+  }
+  .tag {
+    display: inline-block;
+    background: #e8eaf6;
+    color: #1a237e;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 1px 1px;
+  }
+  .tag-green { background: #e8f5e9; color: #2e7d32; }
+  .tag-orange { background: #fff3e0; color: #e65100; }
+  .tag-blue { background: #e3f2fd; color: #1565c0; }
+  .tag-red { background: #ffebee; color: #c62828; }
+  .tag-purple { background: #f3e5f5; color: #6a1b9a; }
+  .yes { color: #2e7d32; font-weight: 700; }
+  .no { color: #c62828; font-weight: 700; }
+  .highlight {
+    background: #e3f2fd;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .section-header td {
+    background: #f5f5f5;
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    padding: 8px 14px;
+    border-bottom: 1px solid #ddd;
+  }
+  .section-header td:first-child {
+    color: #666;
+    font-size: 14px;
+  }
+  .footer-note {
+    margin-top: 16px;
+    padding: 12px 18px;
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .footer-note2 {
+    margin-top: 10px;
+    padding: 12px 18px;
+    background: #e3f2fd;
+    border-left: 4px solid #1565c0;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .code-path {
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 11px;
+    background: #f5f5f5;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #333;
+  }
+  .cmd {
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 12px;
+    background: #263238;
+    color: #a5d6a7;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  small { font-size: 11px; color: #888; }
+  h2 {
+    font-size: 20px;
+    color: #1a237e;
+    margin: 30px 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #1a237e;
+  }
+</style>
+</head>
+<body>
+
+<h1>OpenCode 命令大全</h1>
+<p class="subtitle">CLI 命令 + 内置工具 + 内置代理 + 斜杠命令 | 数据来源：opencode.ai/docs + GitHub anomalyco/opencode</p>
+
+<!-- ==================== 第一部分：CLI 命令 ==================== -->
+<h2>一、CLI 命令（终端执行）</h2>
+<p class="subtitle" style="text-align:left; margin-bottom:16px;">用法：<span class="cmd">opencode &lt;command&gt; [options]</span> | 完整文档：<a href="https://opencode.ai/docs/cli/">opencode.ai/docs/cli</a></p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:100px;">命令</th>
+      <th style="width:80px;">子命令</th>
+      <th class="tool-col" style="width:340px;">作用 & 使用场景</th>
+      <th class="tool-col" style="width:340px;">示例</th>
+      <th class="insight-col" style="width:180px;">一句话总结</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr class="section-header"><td colspan="5">核心执行（最常用）</td></tr>
+
+    <tr>
+      <td><span class="cmd">opencode</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>默认启动 TUI 交互界面。</strong>不带任何参数时直接打开终端 UI，这是最常用的方式。<br>
+        <small>支持 <span class="code-path">--continue</span>（继续上次会话）、<span class="code-path">--model</span>（指定模型）、<span class="code-path">--prompt</span>（预设提示词）</small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode</span><br>
+        <span class="cmd">opencode -c</span> <small># 继续上次会话</small><br>
+        <span class="cmd">opencode -m anthropic/claude-sonnet-4-20250514</span><br>
+        <span class="cmd">opencode --prompt "帮我review代码"</span>
+      </td>
+      <td class="insight-cell">日常开发就打这一个命令</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">run</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>非交互模式执行。</strong>直接传入提示词，执行完自动退出。适合脚本、CI/CD、自动化场景。<br>
+        <small>支持 <span class="code-path">--format json</span>（JSON输出）、<span class="code-path">--file</span>（附加文件）、<span class="code-path">--attach</span>（连接已有服务器）</small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode run "解释这段代码"</span><br>
+        <span class="cmd">opencode run --agent explore "找所有API路由"</span><br>
+        <span class="cmd">opencode run --format json "列出所有TODO" > result.json</span><br>
+        <span class="cmd">echo "修复这个bug" | opencode run</span> <small># 管道输入</small>
+      </td>
+      <td class="insight-cell">CI/CD 和脚本自动化的首选</td>
+    </tr>
+
+    <tr class="section-header"><td colspan="5">服务器模式（多人/远程协作）</td></tr>
+
+    <tr>
+      <td><span class="cmd">serve</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>启动无界面 HTTP 服务器。</strong>暴露完整的 OpenCode API，供远程客户端连接。后台常驻运行。<br>
+        <small>设置 <span class="code-path">OPENCODE_SERVER_PASSWORD</span> 启用认证</small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode serve</span><br>
+        <span class="cmd">opencode serve --port 4096 --hostname 0.0.0.0</span><br>
+        <small># 另一个终端连接：<br><span class="cmd">opencode run --attach http://localhost:4096 "任务"</span></small>
+      </td>
+      <td class="insight-cell">后台跑 Agent 的方式，多客户端共享</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">web</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>启动 Web 界面服务器。</strong>在浏览器中打开 OpenCode UI，适合不想用终端的场景。<br>
+        <small>支持 mDNS 局域网发现、CORS 配置</small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode web</span><br>
+        <span class="cmd">opencode web --port 4096</span><br>
+        <span class="cmd">opencode web --mdns</span> <small># 局域网其他设备可发现</small>
+      </td>
+      <td class="insight-cell">用浏览器操作 Agent</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">attach</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>将终端 TUI 连接到远程服务器。</strong>配合 <span class="cmd">serve</span> 或 <span class="cmd">web</span> 使用。<br>
+        <small>支持 <span class="code-path">--dir</span>（工作目录）、<span class="code-path">--session</span>（指定会话）</small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode attach http://10.20.30.40:4096</span><br>
+        <small># 服务器 A 启动 serve，终端 B 用 attach 连上去</small>
+      </td>
+      <td class="insight-cell">远程连接已运行的 Agent</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">acp</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>启动 ACP（Agent Client Protocol）服务器。</strong>通过 stdin/stdout 用 nd-JSON 通信，供 IDE 等客户端集成。<br>
+        <small>支持 <span class="code-path">--cwd</span>、<span class="code-path">--port</span></small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode acp</span><br>
+        <small># IDE 扩展通过 stdin/stdout 与 Agent 通信</small>
+      </td>
+      <td class="insight-cell">给 IDE 扩展用的通信协议</td>
+    </tr>
+
+    <tr class="section-header"><td colspan="5">代理管理</td></tr>
+
+    <tr>
+      <td rowspan="2"><span class="cmd">agent</span></td>
+      <td><span class="cmd">create</span></td>
+      <td class="tool-cell">
+        <strong>创建自定义代理。</strong>交互式引导，生成 Agent Markdown 文件（含 YAML frontmatter + 系统提示词）。<br>
+        <small>支持 <span class="code-path">--mode</span>（primary/subagent/all）、<span class="code-path">--tools</span>、<span class="code-path">--description</span></small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode agent create</span> <small># 交互式</small><br>
+        <span class="cmd">opencode agent create --description "安全审查代理" --mode subagent --tools read,grep,glob</span>
+      </td>
+      <td class="insight-cell">让 LLM 帮你创建专用 Agent</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">list</span></td>
+      <td class="tool-cell">
+        <strong>列出所有可用代理。</strong>显示名称、模式、权限规则，内置代理排在前面。
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode agent list</span>
+      </td>
+      <td class="insight-cell">看看当前有哪些 Agent 可用</td>
+    </tr>
+
+    <tr class="section-header"><td colspan="5">认证与模型</td></tr>
+
+    <tr>
+      <td rowspan="3"><span class="cmd">auth</span></td>
+      <td><span class="cmd">login</span></td>
+      <td class="tool-cell">
+        <strong>配置 API 密钥。</strong>基于 Models.dev 提供商列表，可为任何想用的提供商配置密钥。密钥存储在 <span class="code-path">~/.local/share/opencode/auth.json</span>。
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode auth login</span> <small># 交互式选择提供商</small>
+      </td>
+      <td class="insight-cell">第一次用必须先登录</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">list</span></td>
+      <td class="tool-cell"><strong>列出所有已认证的提供商。</strong></td>
+      <td class="tool-cell"><span class="cmd">opencode auth list</span></td>
+      <td class="insight-cell">看看配了哪些模型提供商</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">logout</span></td>
+      <td class="tool-cell"><strong>清除提供商凭据。</strong></td>
+      <td class="tool-cell"><span class="cmd">opencode auth logout</span></td>
+      <td class="insight-cell">换个密钥时用</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">models</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>列出所有可用模型。</strong>显示 provider/model 格式，可按提供商筛选。<br>
+        <small><span class="code-path">--verbose</span> 显示费用元数据；<span class="code-path">--refresh</span> 刷新缓存</small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode models</span><br>
+        <span class="cmd">opencode models anthropic</span> <small># 只看 Anthropic 的</small><br>
+        <span class="cmd">opencode models --verbose --refresh</span>
+      </td>
+      <td class="insight-cell">查有哪些模型可以用</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">providers</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>管理提供商认证。</strong>交互式向导或脚本化登录。支持 OAuth、API Key 等多种认证方式。
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode providers</span> <small># 交互式</small><br>
+        <span class="cmd">opencode providers login anthropic --method api-key</span>
+      </td>
+      <td class="insight-cell">更高级的认证管理</td>
+    </tr>
+
+    <tr class="section-header"><td colspan="5">MCP & 插件管理</td></tr>
+
+    <tr>
+      <td rowspan="5"><span class="cmd">mcp</span></td>
+      <td><span class="cmd">add</span></td>
+      <td class="tool-cell"><strong>添加 MCP 服务器。</strong>交互式引导，支持本地和远程 MCP。</td>
+      <td class="tool-cell"><span class="cmd">opencode mcp add</span></td>
+      <td class="insight-cell">给 Agent 装新工具</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">list</span></td>
+      <td class="tool-cell"><strong>列出 MCP 服务器及连接状态。</strong>状态：已连接 ✓、已禁用 ○、需认证 ⚠、失败 ✗</td>
+      <td class="tool-cell"><span class="cmd">opencode mcp list</span></td>
+      <td class="insight-cell">检查 MCP 连通性</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">auth</span></td>
+      <td class="tool-cell"><strong>对支持 OAuth 的 MCP 服务器认证。</strong></td>
+      <td class="tool-cell"><span class="cmd">opencode mcp auth</span> <small># 列出所有可认证的</small><br><span class="cmd">opencode mcp auth my-server</span></td>
+      <td class="insight-cell">MCP OAuth 登录</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">logout</span></td>
+      <td class="tool-cell"><strong>移除 MCP 服务器的 OAuth 凭据。</strong></td>
+      <td class="tool-cell"><span class="cmd">opencode mcp logout my-server</span></td>
+      <td class="insight-cell">MCP 登出</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">debug</span></td>
+      <td class="tool-cell"><strong>调试 MCP 连接问题。</strong>排查为什么某个 MCP 连不上。</td>
+      <td class="tool-cell"><span class="cmd">opencode mcp debug my-server</span></td>
+      <td class="insight-cell">MCP 排障专用</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">plugin</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>安装 npm 插件。</strong>自动解析插件 manifest 并写入配置文件。别名：<span class="cmd">plug</span>。<br>
+        <small>支持 <span class="code-path">--global</span>（全局安装）、<span class="code-path">--force</span>（强制重装）</small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode plugin @scope/plugin-name</span><br>
+        <span class="cmd">opencode plugin @scope/plugin-name --global</span>
+      </td>
+      <td class="insight-cell">像 npm install 一样装插件</td>
+    </tr>
+
+    <tr class="section-header"><td colspan="5">会话管理</td></tr>
+
+    <tr>
+      <td rowspan="2"><span class="cmd">session</span></td>
+      <td><span class="cmd">list</span></td>
+      <td class="tool-cell"><strong>列出所有会话。</strong>支持分页、JSON 输出。</td>
+      <td class="tool-cell">
+        <span class="cmd">opencode session list</span><br>
+        <span class="cmd">opencode session list -n 10 --format json</span>
+      </td>
+      <td class="insight-cell">查看历史对话记录</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">delete</span></td>
+      <td class="tool-cell"><strong>删除指定会话。</strong></td>
+      <td class="tool-cell"><span class="cmd">opencode session delete &lt;sessionID&gt;</span></td>
+      <td class="insight-cell">清理不需要的会话</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">export</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>导出会话为 JSON。</strong>敏感内容会自动替换为 <span class="code-path">[redacted]</span>，可安全分享。
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode export &lt;sessionID&gt; > session.json</span><br>
+        <span class="cmd">opencode export</span> <small># 交互式选择</small>
+      </td>
+      <td class="insight-cell">安全导出对话（自动脱敏）</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">import</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>导入会话数据。</strong>从本地 JSON 或分享链接导入。
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode import session.json</span><br>
+        <span class="cmd">opencode import https://opncd.ai/s/abc123</span>
+      </td>
+      <td class="insight-cell">恢复或迁移会话</td>
+    </tr>
+
+    <tr class="section-header"><td colspan="5">统计与运维</td></tr>
+
+    <tr>
+      <td><span class="cmd">stats</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>Token 用量和费用统计。</strong>按天、按项目、按模型、按工具查看消耗。<br>
+        <small><span class="code-path">--days</span>、<span class="code-path">--tools</span>、<span class="code-path">--models</span>、<span class="code-path">--project</span></small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode stats</span><br>
+        <span class="cmd">opencode stats --days 7</span><br>
+        <span class="cmd">opencode stats --tools 5 --models</span>
+      </td>
+      <td class="insight-cell">看看花了多少钱</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">db</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>直接访问 SQLite 数据库。</strong>可运行 SQL 查询或打开交互式 shell。<br>
+        <small>子命令：<span class="code-path">path</span>（打印路径）、<span class="code-path">migrate</span>（迁移旧数据）</small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode db</span> <small># 交互式 shell</small><br>
+        <span class="cmd">opencode db "SELECT id,title FROM session LIMIT 5"</span>
+      </td>
+      <td class="insight-cell">底层 DB 直接查</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">pr</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>拉取 GitHub PR 并启动 OpenCode。</strong>自动 checkout PR 分支，处理 fork remote，检测 PR 中是否含分享的会话。
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode pr 42</span> <small># checkout PR #42 并开始工作</small>
+      </td>
+      <td class="insight-cell">Review PR 的最快方式</td>
+    </tr>
+
+    <tr>
+      <td rowspan="4"><span class="cmd">account</span></td>
+      <td><span class="cmd">login</span></td>
+      <td class="tool-cell"><strong>登录 OpenCode 云服务。</strong>使用 device-code OAuth 模式，浏览器验证。</td>
+      <td class="tool-cell"><span class="cmd">opencode account login https://app.opencode.ai</span></td>
+      <td class="insight-cell">分享会话需要先登录</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">logout</span></td>
+      <td class="tool-cell"><strong>登出 OpenCode 云服务。</strong></td>
+      <td class="tool-cell"><span class="cmd">opencode account logout</span></td>
+      <td class="insight-cell">—</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">switch</span></td>
+      <td class="tool-cell"><strong>切换组织。</strong></td>
+      <td class="tool-cell"><span class="cmd">opencode account switch</span></td>
+      <td class="insight-cell">—</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">orgs</span></td>
+      <td class="tool-cell"><strong>列出可用组织。</strong></td>
+      <td class="tool-cell"><span class="cmd">opencode account orgs</span></td>
+      <td class="insight-cell">—</td>
+    </tr>
+
+    <tr>
+      <td rowspan="2"><span class="cmd">github</span></td>
+      <td><span class="cmd">install</span></td>
+      <td class="tool-cell"><strong>在仓库中安装 GitHub Agent。</strong>设置 GitHub Actions 工作流，实现 PR/Issue 自动化。</td>
+      <td class="tool-cell"><span class="cmd">opencode github install</span></td>
+      <td class="insight-cell">让 Agent 在 GitHub 上自动干活</td>
+    </tr>
+    <tr>
+      <td><span class="cmd">run</span></td>
+      <td class="tool-cell"><strong>运行 GitHub Agent。</strong>通常在 GitHub Actions 中调用。</td>
+      <td class="tool-cell"><span class="cmd">opencode github run --token $GITHUB_TOKEN</span></td>
+      <td class="insight-cell">CI/CD 中调用</td>
+    </tr>
+
+    <tr class="section-header"><td colspan="5">系统维护</td></tr>
+
+    <tr>
+      <td><span class="cmd">upgrade</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>升级 OpenCode。</strong>可指定目标版本和安装方式。
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode upgrade</span> <small># 升到最新</small><br>
+        <span class="cmd">opencode upgrade v1.2.3</span> <small># 指定版本</small><br>
+        <span class="cmd">opencode upgrade -m brew</span> <small># 用 Homebrew 升级</small>
+      </td>
+      <td class="insight-cell">保持 OpenCode 最新</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">uninstall</span></td>
+      <td>—</td>
+      <td class="tool-cell">
+        <strong>卸载 OpenCode。</strong>删除所有相关文件。可保留配置或数据。<br>
+        <small><span class="code-path">--keep-config</span>、<span class="code-path">--keep-data</span>、<span class="code-path">--dry-run</span></small>
+      </td>
+      <td class="tool-cell">
+        <span class="cmd">opencode uninstall</span><br>
+        <span class="cmd">opencode uninstall --dry-run</span> <small># 先看看会删什么</small>
+      </td>
+      <td class="insight-cell">彻底清理</td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- ==================== 第二部分：内置工具 ==================== -->
+<h2>二、内置工具（Agent 可调用的能力）</h2>
+<p class="subtitle" style="text-align:left; margin-bottom:16px;">Agent 通过 ReAct 循环调用这些工具完成任务 | 通过 <span class="code-path">opencode.json</span> 的 <span class="code-path">permission</span> 字段控制权限（allow/deny/ask）</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:100px;">工具名</th>
+      <th class="tool-col" style="width:300px;">作用</th>
+      <th class="tool-col" style="width:340px;">使用场景 & 示例</th>
+      <th class="insight-col" style="width:180px;">一句话总结</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><span class="tag">bash</span></td>
+      <td class="tool-cell">在项目环境中<strong>执行 shell 命令</strong>。可运行任何终端命令。</td>
+      <td class="tool-cell">运行测试 <span class="cmd">npm test</span>、查看状态 <span class="cmd">git status</span>、安装依赖 <span class="cmd">pip install</span> 等</td>
+      <td class="insight-cell">Agent 的手——能执行命令</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">edit</span></td>
+      <td class="tool-cell">通过<strong>精确字符串替换</strong>修改现有文件。Agent 修改代码的主要方式。</td>
+      <td class="tool-cell">修复 bug：将 <span class="code-path">let x = 1</span> 替换为 <span class="code-path">const x = 1</span></td>
+      <td class="insight-cell">Agent 的笔——能改代码</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">write</span></td>
+      <td class="tool-cell"><strong>创建新文件或覆盖</strong>现有文件。</td>
+      <td class="tool-cell">创建新组件文件、生成配置文件、写测试文件</td>
+      <td class="insight-cell">Agent 的笔——能建文件</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">read</span></td>
+      <td class="tool-cell"><strong>读取文件内容。</strong>支持指定行范围，大文件可分段读取。</td>
+      <td class="tool-cell">先读取文件再决定怎么改；查看配置内容</td>
+      <td class="insight-cell">Agent 的眼——能看文件</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">grep</span></td>
+      <td class="tool-cell">使用<strong>正则表达式搜索</strong>文件内容。底层使用 ripgrep，自动遵循 .gitignore。</td>
+      <td class="tool-cell">搜索所有 TODO 注释、查找函数定义、定位错误信息</td>
+      <td class="insight-cell">Agent 的搜索——能找内容</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">glob</span></td>
+      <td class="tool-cell">通过<strong>模式匹配查找文件</strong>。返回按修改时间排序的路径。</td>
+      <td class="tool-cell">找所有 TypeScript 文件 <span class="code-path">**/*.ts</span>、找 src 下所有组件</td>
+      <td class="insight-cell">Agent 的搜索——能找文件</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag tag-orange">lsp</span></td>
+      <td class="tool-cell"><strong>与 LSP 服务器交互</strong>（实验性）。支持定义跳转、引用查找、悬停信息、调用层次等。<br><small>OpenCode 的独特优势——Agent 能像 IDE 一样理解代码语义</small></td>
+      <td class="tool-cell">跳转到函数定义、查找所有引用、查看类型信息</td>
+      <td class="insight-cell">Agent 的 IDE——能理解代码语义</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">patch</span></td>
+      <td class="tool-cell">对文件<strong>应用补丁</strong>。适用于各种来源的 diff。</td>
+      <td class="tool-cell">应用 PR 的 diff、应用生成的补丁文件</td>
+      <td class="insight-cell">批量修改的高级方式</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag tag-blue">skill</span></td>
+      <td class="tool-cell"><strong>加载技能文件</strong>（SKILL.md）并注入到对话上下文中。</td>
+      <td class="tool-cell">Agent 自动发现并加载项目级或全局级技能</td>
+      <td class="insight-cell">让 Agent 瞬间学会新技能</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">todowrite</span></td>
+      <td class="tool-cell"><strong>管理待办事项列表。</strong>创建和更新任务，跟踪多步骤操作进度。</td>
+      <td class="tool-cell">复杂重构时创建任务清单，逐步完成打勾</td>
+      <td class="insight-cell">Agent 的笔记本——能列计划</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">webfetch</span></td>
+      <td class="tool-cell"><strong>获取网页内容。</strong>读取在线文档、API 文档等。</td>
+      <td class="tool-cell">查阅第三方 API 文档、读取在线教程</td>
+      <td class="insight-cell">Agent 能上网看文档</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag">websearch</span></td>
+      <td class="tool-cell"><strong>网络搜索。</strong>使用 Exa AI 搜索引擎，无需 API 密钥。<br><small>适合查超出训练数据截止日期的最新信息</small></td>
+      <td class="tool-cell">搜索最新的库版本、查找最新 API 变更</td>
+      <td class="insight-cell">Agent 能上网搜索</td>
+    </tr>
+
+    <tr>
+      <td><span class="tag tag-purple">question</span></td>
+      <td class="tool-cell"><strong>向用户提问。</strong>包含标题、正文和选项列表，用户可选择或自由输入。</td>
+      <td class="tool-cell">任务不明确时主动询问用户偏好；实现方案选择</td>
+      <td class="insight-cell">Agent 不确定时会问人</td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- ==================== 第三部分：内置代理 ==================== -->
+<h2>三、内置代理类型</h2>
+<p class="subtitle" style="text-align:left; margin-bottom:16px;">每个代理有不同的权限、工具集和行为模式 | 来源：<a href="https://zread.ai/anomalyco/opencode/3-cli-commands-and-agents">GitHub 源码分析</a></p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:100px;">代理名</th>
+      <th style="width:80px;">模式</th>
+      <th class="tool-col" style="width:320px;">作用 & 权限特点</th>
+      <th class="tool-col" style="width:320px;">使用场景</th>
+      <th class="insight-col" style="width:180px;">一句话总结</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><strong>build</strong></td>
+      <td><span class="tag tag-green">primary</span></td>
+      <td class="tool-cell">
+        <strong>默认主代理。</strong>权限最宽：<span class="yes">允许提问</span>、<span class="yes">允许进入计划模式</span>、可执行所有工具。<br>
+        <small>这是你在 TUI 中默认使用的代理</small>
+      </td>
+      <td class="tool-cell">日常开发：写代码、改 bug、重构、回答问题</td>
+      <td class="insight-cell">万能主力，什么都能干</td>
+    </tr>
+
+    <tr>
+      <td><strong>plan</strong></td>
+      <td><span class="tag tag-green">primary</span></td>
+      <td class="tool-cell">
+        <strong>计划模式代理。</strong>所有编辑工具被拒绝，<span class="yes">只允许写 <span class="code-path">.opencode/plans/*.md</span></span>。可退出计划模式。<br>
+        <small>只思考不动手，先规划再执行</small>
+      </td>
+      <td class="tool-cell">复杂任务拆解、架构设计、方案讨论</td>
+      <td class="insight-cell">只动脑不动手的规划师</td>
+    </tr>
+
+    <tr>
+      <td><strong>explore</strong></td>
+      <td><span class="tag tag-orange">subagent</span></td>
+      <td class="tool-cell">
+        <strong>快速代码探索代理。</strong>默认拒绝所有工具，仅开放只读工具 + bash + web 工具。<br>
+        <small>速度快、权限小、安全</small>
+      </td>
+      <td class="tool-cell">快速浏览代码库、理解项目结构、查找特定代码</td>
+      <td class="insight-cell">快速侦察兵，只看不改</td>
+    </tr>
+
+    <tr>
+      <td><strong>general</strong></td>
+      <td><span class="tag tag-orange">subagent</span></td>
+      <td class="tool-cell">
+        <strong>通用子代理。</strong>用于多步骤任务和并行工作。Todo 写入被禁用。<br>
+        <small>由主代理通过 task 工具调用</small>
+      </td>
+      <td class="tool-cell">并行执行子任务：一个修前端、一个修后端</td>
+      <td class="insight-cell">主代理的助手，干杂活</td>
+    </tr>
+
+    <tr>
+      <td><strong>compaction</strong></td>
+      <td><span class="tag" style="background:#eee;color:#888;">hidden</span></td>
+      <td class="tool-cell"><strong>上下文压缩代理。</strong>自动总结长对话历史，保持在上下文窗口内。</td>
+      <td class="tool-cell">系统自动调用，用户不直接使用</td>
+      <td class="insight-cell">系统内部用，自动压缩对话</td>
+    </tr>
+
+    <tr>
+      <td><strong>title</strong></td>
+      <td><span class="tag" style="background:#eee;color:#888;">hidden</span></td>
+      <td class="tool-cell"><strong>标题生成代理。</strong>低温度（0.5），为会话生成简洁标题。</td>
+      <td class="tool-cell">系统自动调用</td>
+      <td class="insight-cell">系统内部用，自动起标题</td>
+    </tr>
+
+    <tr>
+      <td><strong>summary</strong></td>
+      <td><span class="tag" style="background:#eee;color:#888;">hidden</span></td>
+      <td class="tool-cell"><strong>摘要生成代理。</strong>为会话生成摘要。</td>
+      <td class="tool-cell">系统自动调用</td>
+      <td class="insight-cell">系统内部用，自动写摘要</td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- ==================== 第四部分：斜杠命令 ==================== -->
+<h2>四、TUI 内斜杠命令（会话内输入 / 开头）</h2>
+<p class="subtitle" style="text-align:left; margin-bottom:16px;">在 TUI 对话框中直接输入 /command 调用 | 命令来源：配置文件 > MCP prompts > Skills</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:120px;">命令</th>
+      <th class="tool-col" style="width:340px;">作用 & 使用场景</th>
+      <th class="tool-col" style="width:340px;">示例</th>
+      <th class="insight-col" style="width:180px;">一句话总结</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><span class="cmd">/init</span></td>
+      <td class="tool-cell"><strong>自动生成 AGENTS.md。</strong>扫描项目结构，理解项目用途，生成或补充 AGENTS.md 文件。第一次在新项目中使用时强烈推荐。</td>
+      <td class="tool-cell">在新项目中：<br><span class="cmd">/init</span><br><small># OpenCode 自动扫描项目并生成上下文文件</small></td>
+      <td class="insight-cell">新项目第一步就打这个</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">/review</span></td>
+      <td class="tool-cell"><strong>代码审查。</strong>审查代码变更，接受参数：commit（某次提交）、branch（某分支）、pr（某个 PR）。默认审查未提交的变更。</td>
+      <td class="tool-cell">
+        <span class="cmd">/review</span> <small># 审查未提交变更</small><br>
+        <span class="cmd">/review commit</span> <small># 审查最新提交</small><br>
+        <span class="cmd">/review branch</span> <small># 审查分支差异</small><br>
+        <span class="cmd">/review pr</span> <small># 审查 PR</small>
+      </td>
+      <td class="insight-cell">让 Agent 当 Code Reviewer</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">/share</span></td>
+      <td class="tool-cell"><strong>分享当前会话。</strong>生成分享链接，可发给同事查看完整对话过程。</td>
+      <td class="tool-cell"><span class="cmd">/share</span></td>
+      <td class="insight-cell">把对话分享给同事</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">/compact</span></td>
+      <td class="tool-cell"><strong>手动压缩上下文。</strong>将长对话总结压缩，释放上下文窗口。当对话过长时非常有用。</td>
+      <td class="tool-cell"><span class="cmd">/compact</span></td>
+      <td class="insight-cell">对话太长时压缩一下</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">/clear</span></td>
+      <td class="tool-cell"><strong>清空当前会话。</strong>重新开始对话。</td>
+      <td class="tool-cell"><span class="cmd">/clear</span></td>
+      <td class="insight-cell">重新开始</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">/help</span></td>
+      <td class="tool-cell"><strong>显示帮助信息。</strong></td>
+      <td class="tool-cell"><span class="cmd">/help</span></td>
+      <td class="insight-cell">忘了命令就看帮助</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">/model</span></td>
+      <td class="tool-cell"><strong>切换模型。</strong>在会话中途切换 LLM 模型。</td>
+      <td class="tool-cell"><span class="cmd">/model</span></td>
+      <td class="insight-cell">中途换模型</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">/cost</span></td>
+      <td class="tool-cell"><strong>显示当前会话的 Token 用量和费用。</strong></td>
+      <td class="tool-cell"><span class="cmd">/cost</span></td>
+      <td class="insight-cell">看看这次对话花了多少</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">/plugins</span></td>
+      <td class="tool-cell"><strong>查看已安装的插件。</strong></td>
+      <td class="tool-cell"><span class="cmd">/plugins</span></td>
+      <td class="insight-cell">看看装了哪些插件</td>
+    </tr>
+
+    <tr>
+      <td><span class="cmd">&lt;自定义&gt;</span></td>
+      <td class="tool-cell">
+        <strong>自定义命令。</strong>在 <span class="code-path">opencode.json</span> 的 <span class="code-path">command</span> 字段中定义，使用 <span class="code-path">$ARGUMENTS</span> 接收参数。<br>
+        <small>也可在 <span class="code-path">.opencode/commands/*.md</span> 中以 Markdown 文件形式定义</small>
+      </td>
+      <td class="tool-cell">
+        配置中定义：<br>
+        <span class="code-path">"deploy": { "template": "部署到 $ARGUMENTS" }</span><br>
+        调用：<span class="cmd">/deploy staging</span>
+      </td>
+      <td class="insight-cell">把团队 SOP 固化为命令</td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- ==================== 第五部分：Agent 协作机制 ==================== -->
+<h2>五、Agent 协作机制详解：主代理 + 子代理 + 系统代理</h2>
+<p class="subtitle" style="text-align:left; margin-bottom:16px;">用公司组织架构理解 Agent 体系 | 来源：<a href="https://opencode.ai/docs/agents/">opencode.ai/docs/agents</a></p>
+
+<!-- 5.1 组织架构类比 -->
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:100px;">层级</th>
+      <th style="width:120px;">角色</th>
+      <th class="tool-col" style="width:380px;">在 OpenCode 中对应什么</th>
+      <th class="tool-col" style="width:380px;">怎么交互</th>
+      <th class="insight-col" style="width:180px;">一句话理解</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><span class="tag" style="background:#fff3e0;color:#e65100;">L0</span></td>
+      <td><strong>你（老板）</strong></td>
+      <td class="tool-cell">终端用户。下达任务，查看结果。</td>
+      <td class="tool-cell">在 TUI 中输入指令；按 <strong>Tab</strong> 切换主代理；输入 <strong>@代理名</strong> 调用子代理</td>
+      <td class="insight-cell">你只跟主代理说话</td>
+    </tr>
+
+    <tr>
+      <td rowspan="2"><span class="tag tag-green">L1</span><br><small>主代理</small></td>
+      <td><strong>Build</strong><br><span class="tag tag-green">primary</span></td>
+      <td class="tool-cell">
+        <strong>全栈工程师。</strong>默认主代理，<span class="yes">所有工具全开</span>：读写文件、执行命令、提问、进入计划模式。<br>
+        <small>打开 OpenCode 默认就是和 Build 对话</small>
+      </td>
+      <td class="tool-cell">
+        · 你直接和它对话<br>
+        · 按 <strong>Tab</strong> 可切换到 Plan<br>
+        · 它有需要时会自动调用子代理（通过 task 工具）
+      </td>
+      <td class="insight-cell">万能主力，什么都能干</td>
+    </tr>
+    <tr>
+      <td><strong>Plan</strong><br><span class="tag tag-green">primary</span></td>
+      <td class="tool-cell">
+        <strong>架构师。</strong>规划专用，<span class="no">禁止改代码、禁止执行命令</span>（需审批）。只能读代码 + 写计划文件到 <span class="code-path">.opencode/plans/*.md</span>。<br>
+        <small>只思考不动手，先规划再执行</small>
+      </td>
+      <td class="tool-cell">
+        · 按 <strong>Tab</strong> 切换到 Plan<br>
+        · 适合"先听建议再决定"的场景
+      </td>
+      <td class="insight-cell">只动脑不动手的规划师</td>
+    </tr>
+
+    <tr>
+      <td rowspan="2"><span class="tag tag-orange">L2</span><br><small>子代理</small></td>
+      <td><strong>General</strong><br><span class="tag tag-orange">subagent</span></td>
+      <td class="tool-cell">
+        <strong>万能助手。</strong>完整工具访问（除 Todo 外），能改文件、能执行命令。适合多步骤任务和并行工作。<br>
+        <small>由主代理通过 task 工具自动调用，也可手动 @</small>
+      </td>
+      <td class="tool-cell">
+        · <strong>主代理自动调用</strong>：Build 觉得任务需要帮助时自动派活<br>
+        · <strong>手动 @ 调用</strong>：<span class="cmd">@general 帮我改 backend/auth.ts</span>
+      </td>
+      <td class="insight-cell">主代理的助手，干杂活</td>
+    </tr>
+    <tr>
+      <td><strong>Explore</strong><br><span class="tag tag-orange">subagent</span></td>
+      <td class="tool-cell">
+        <strong>侦察兵。</strong>纯只读代理，<span class="no">不能改任何文件</span>。只能读文件、搜索代码、上网查资料。速度快、权限小、安全。<br>
+        <small>最适合快速了解代码库结构</small>
+      </td>
+      <td class="tool-cell">
+        · <strong>主代理自动调用</strong>：Build 需要先了解代码库时<br>
+        · <strong>手动 @ 调用</strong>：<span class="cmd">@explore 找所有API路由</span>
+      </td>
+      <td class="insight-cell">快速侦察兵，只看不改</td>
+    </tr>
+
+    <tr>
+      <td rowspan="3"><span class="tag" style="background:#eee;color:#888;">L3</span><br><small>系统代理</small><br><small>（隐藏）</small></td>
+      <td><strong>Compaction</strong></td>
+      <td class="tool-cell"><strong>上下文压缩。</strong>对话太长时自动将历史压缩为摘要，释放上下文窗口。</td>
+      <td class="tool-cell">完全自动，你感知不到。可用 <span class="cmd">/compact</span> 手动触发</td>
+      <td class="insight-cell">后台自动压缩对话</td>
+    </tr>
+    <tr>
+      <td><strong>Title</strong></td>
+      <td class="tool-cell"><strong>标题生成。</strong>每次会话开始后自动生成标题（低温度 0.5）。</td>
+      <td class="tool-cell">完全自动</td>
+      <td class="insight-cell">后台自动起标题</td>
+    </tr>
+    <tr>
+      <td><strong>Summary</strong></td>
+      <td class="tool-cell"><strong>摘要生成。</strong>自动为会话生成摘要。</td>
+      <td class="tool-cell">完全自动</td>
+      <td class="insight-cell">后台自动写摘要</td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- 5.2 协作流程示例 -->
+<div style="background:#fff; border-radius:8px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:20px 24px; margin-bottom:30px;">
+  <h3 style="color:#1a237e; margin-bottom:12px; font-size:16px;">协作流程示例：你说"重构 auth 模块，把 JWT 换成 OAuth2"</h3>
+
+  <div style="font-family:'Cascadia Code','Fira Code','Consolas',monospace; font-size:13px; line-height:2.2; background:#263238; color:#e0e0e0; padding:20px; border-radius:6px; overflow-x:auto;">
+    <span style="color:#ff9800;">你（老板）</span>："重构 auth 模块"<br>
+    &nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;▼<br>
+    <span style="color:#4caf50;">Build（全栈工程师，主代理）</span> 收到任务<br>
+    &nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;├─ 思考："任务很大，先了解现有代码"<br>
+    &nbsp;&nbsp;│&nbsp;&nbsp;调用 task 工具 → <span style="color:#ff9800;">@explore</span>（侦察兵，子代理）<br>
+    &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;└─ Explore 只读扫描 auth 模块 → 返回文件列表和依赖关系<br>
+    &nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;├─ 收到 Explore 结果，制定重构计划<br>
+    &nbsp;&nbsp;│&nbsp;&nbsp;调用 task 工具 → <span style="color:#ff9800;">@general</span>（万能助手，子代理）<br>
+    &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;└─ General 修改 backend/auth.ts（OAuth2 逻辑）<br>
+    &nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;├─ 同时：Build 自己修改 frontend 的登录组件<br>
+    &nbsp;&nbsp;│&nbsp;&nbsp;（<span style="color:#4caf50;">主代理</span> + <span style="color:#ff9800;">子代理</span> <strong>并行工作</strong>）<br>
+    &nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;└─ 全部完成 → 回复你："重构完成，以下是改动..."<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#888;">（子代理结果汇报给 Build，Build 统一汇报给你）</span>
+  </div>
+
+  <div style="margin-top:12px; padding:10px 14px; background:#e8f5e9; border-radius:4px; font-size:13px; color:#2e7d32; line-height:1.6;">
+    <strong>关键要点：</strong><br>
+    ① <strong>Build 是唯一和你直接对话的角色。</strong>子代理的结果汇报给 Build，Build 再汇报给你。<br>
+    ② 子代理执行时创建<strong>子会话</strong>，用快捷键 <span class="code-path">Leader+Right/Left</span> 在主会话和子会话之间切换查看。<br>
+    ③ 子代理可以被 <strong>@ 手动调用</strong>，也可以被主代理<strong>自动调用</strong>。<br>
+    ④ <span style="color:#888;">Compaction/Title/Summary</span> 在后台默默干活，你完全感知不到。
+  </div>
+</div>
+
+<!-- 5.3 四代理速查对比 -->
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:100px;"></th>
+      <th class="tool-col" style="width:170px;">Build（全栈工程师）</th>
+      <th class="tool-col" style="width:170px;">Plan（架构师）</th>
+      <th class="tool-col" style="width:170px;">General（万能助手）</th>
+      <th class="tool-col" style="width:170px;">Explore（侦察兵）</th>
+      <th class="insight-col" style="width:160px;">你还能自定义代理</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><strong>类型</strong></td>
+      <td class="tool-cell"><span class="tag tag-green">主代理</span></td>
+      <td class="tool-cell"><span class="tag tag-green">主代理</span></td>
+      <td class="tool-cell"><span class="tag tag-orange">子代理</span></td>
+      <td class="tool-cell"><span class="tag tag-orange">子代理</span></td>
+      <td class="insight-cell" rowspan="6" style="vertical-align:top; line-height:1.8;">
+        在 <span class="code-path">opencode.json</span> 中定义：<br>
+        <span class="code-path">"agent": {<br>
+        &nbsp;&nbsp;"reviewer": {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"description": "代码审查",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"mode": "subagent",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"tools": {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"write": false,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"edit": false<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+        &nbsp;&nbsp;}<br>
+        }</span><br><br>
+        或用 Markdown：<br>
+        <span class="code-path">.opencode/agents/review.md</span><br><br>
+        然后调用：<br>
+        <span class="cmd">@reviewer 审查代码</span>
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>谁在用</strong></td>
+      <td class="tool-cell">你直接对话（默认）</td>
+      <td class="tool-cell">你直接对话（Tab切换）</td>
+      <td class="tool-cell">Build 调用 / 你 @ 调用</td>
+      <td class="tool-cell">Build 调用 / 你 @ 调用</td>
+    </tr>
+
+    <tr>
+      <td><strong>能改代码吗</strong></td>
+      <td class="tool-cell"><span class="yes">能</span></td>
+      <td class="tool-cell"><span class="no">不能</span>（需审批）</td>
+      <td class="tool-cell"><span class="yes">能</span></td>
+      <td class="tool-cell"><span class="no">不能</span>（纯只读）</td>
+    </tr>
+
+    <tr>
+      <td><strong>能执行命令吗</strong></td>
+      <td class="tool-cell"><span class="yes">能</span></td>
+      <td class="tool-cell"><span class="no">不能</span>（需审批）</td>
+      <td class="tool-cell"><span class="yes">能</span></td>
+      <td class="tool-cell"><span class="yes">能</span>（只读类）</td>
+    </tr>
+
+    <tr>
+      <td><strong>什么时候用</strong></td>
+      <td class="tool-cell">日常开发全部场景</td>
+      <td class="tool-cell">只想看方案，不想改代码</td>
+      <td class="tool-cell">并行子任务</td>
+      <td class="tool-cell">快速了解项目结构</td>
+    </tr>
+
+    <tr>
+      <td><strong>类比</strong></td>
+      <td class="tool-cell">全栈工程师</td>
+      <td class="tool-cell">架构师</td>
+      <td class="tool-cell">万能助手</td>
+      <td class="tool-cell">侦察兵</td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- ==================== 第六部分：Agent Teams vs Subagent ==================== -->
+<h2>六、Agent Teams vs Subagent：两个不同的概念</h2>
+<p class="subtitle" style="text-align:left; margin-bottom:16px;">Subagent 是内置的单兵模式 | Agent Teams 是插件提供的团队协作模式 | 来源：<a href="https://github.com/hueyexe/opencode-ensemble">opencode-ensemble</a> + <a href="https://github.com/anomalyco/opencode/pull/12711">PR #12711</a></p>
+
+<!-- 6.1 核心区别 -->
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:120px;">对比维度</th>
+      <th class="tool-col" style="width:380px;">Subagent（子代理）<br><small>内置功能，开箱即用</small></th>
+      <th class="tool-col" style="width:380px;">Agent Teams（代理团队）<br><small>需要安装插件 opencode-ensemble</small></th>
+      <th class="insight-col" style="width:280px;">为什么这很重要</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><strong>一句话定义</strong></td>
+      <td class="tool-cell">主代理的<span class="highlight">打工人</span>——接到任务就干，干完就销毁，单向汇报</td>
+      <td class="tool-cell">多个 Agent 组成<span class="highlight">团队</span>——有分工、有协作、能并行、能互相通信</td>
+      <td class="insight-cell">子代理 = 你一个人干不过来，雇几个临时工帮忙<br>团队模式 = 你组建一个正式项目组</td>
+    </tr>
+
+    <tr>
+      <td><strong>安装方式</strong></td>
+      <td class="tool-cell"><span class="yes">内置</span>，无需任何配置<br><span class="code-path">opencode</span> 启动即可使用</td>
+      <td class="tool-cell"><span class="tag tag-orange">需要安装插件</span><br>
+        <span class="code-path">opencode plugin install @hueyexe/opencode-ensemble</span><br>
+        然后在 <span class="code-path">opencode.json</span> 中配置
+      </td>
+      <td class="insight-cell">Subagent 是 OpenCode 的基础能力<br>Agent Teams 是社区生态扩展</td>
+    </tr>
+
+    <tr>
+      <td><strong>执行方式</strong></td>
+      <td class="tool-cell"><span class="tag tag-red">串行</span> — 一个接一个执行<br>主代理 → 子代理A → 汇报 → 子代理B → 汇报 → ...</td>
+      <td class="tool-cell"><span class="tag tag-green">并行</span> — 多个 Agent 同时工作<br>Agent A 和 Agent B 可以同时执行不同任务</td>
+      <td class="insight-cell">串行 = 你派一个人去查日志，回来再派另一个人去改代码<br>并行 = 两个人同时干不同的事</td>
+    </tr>
+
+    <tr>
+      <td><strong>通信方式</strong></td>
+      <td class="tool-cell"><span class="tag tag-red">单向汇报</span><br>子代理只能向主代理返回结果<br>子代理之间<strong>不能</strong>直接通信</td>
+      <td class="tool-cell"><span class="tag tag-green">点对点通信</span><br>Agent 之间可以直接发消息<br>支持共享 Task Board（任务看板）</td>
+      <td class="insight-cell">单向 = 临时工只能跟老板汇报<br>点对点 = 团队成员之间可以直接沟通</td>
+    </tr>
+
+    <tr>
+      <td><strong>生命周期</strong></td>
+      <td class="tool-cell"><span class="tag tag-red">一次性</span>（ disposable ）<br>任务完成即销毁，无状态保留</td>
+      <td class="tool-cell"><span class="tag tag-green">持久化</span>（ persistent ）<br>Agent 在整个任务周期内保持存活，记忆持续累积</td>
+      <td class="insight-cell">子代理用完即丢，不会记住上次干了什么<br>团队 Agent 有持续记忆，越干越懂上下文</td>
+    </tr>
+
+    <tr>
+      <td><strong>模型混用</strong></td>
+      <td class="tool-cell"><span class="tag tag-red">同模型</span><br>所有子代理使用当前会话设定的同一个模型</td>
+      <td class="tool-cell"><span class="tag tag-green">多模型混用</span><br>不同 Agent 可使用不同模型（如 GPT-4o 做规划 + Claude 做编码）</td>
+      <td class="insight-cell">同模型 = 所有人用同一种工具<br>多模型 = 专家团队各有所长</td>
+    </tr>
+
+    <tr>
+      <td><strong>文件隔离</strong></td>
+      <td class="tool-cell"><span class="tag tag-red">共享目录</span><br>所有子代理在同一个工作目录中操作，<strong>可能冲突</strong></td>
+      <td class="tool-cell"><span class="tag tag-green">Git Worktree 隔离</span><br>每个 Agent 在独立的 worktree 分支中工作，互不干扰，完成后合并</td>
+      <td class="insight-cell">共享目录 = 多人同时改一个文件容易冲突<br>Worktree = 每个人有自己的副本，改完再合并</td>
+    </tr>
+
+    <tr>
+      <td><strong>适合场景</strong></td>
+      <td class="tool-cell">
+        · 单个复杂任务（重构一个模块）<br>
+        · 需要分步执行的流水线任务<br>
+        · 日常 90% 的开发工作
+      </td>
+      <td class="tool-cell">
+        · 大规模并行任务（同时修 10 个 bug）<br>
+        · 多模型协作（规划 + 编码 + 审查分工）<br>
+        · 需要多个 Agent 长时间协作的复杂项目
+      </td>
+      <td class="insight-cell">日常开发用 Subagent 就够了<br>Agent Teams 是重型武器，适合大场面</td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- 6.2 实战对比 -->
+<h3 style="margin: 20px 0 10px 0; font-size: 16px; color: #1a237e;">实战对比：同一任务，两种方式</h3>
+<p style="font-size: 13px; color: #555; margin-bottom: 12px;">任务：<strong>"重构认证模块，同时更新所有 API 测试"</strong></p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:120px;">执行步骤</th>
+      <th class="tool-col" style="width:430px;">Subagent 方式（串行）</th>
+      <th class="tool-col" style="width:430px;">Agent Teams 方式（并行）</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><strong>第1步</strong></td>
+      <td class="tool-cell">
+        <span class="step-num">1</span> 主代理（Build）分析任务<br>
+        → 派子代理 Explore 扫描认证模块代码结构
+      </td>
+      <td class="tool-cell">
+        <span class="step-num">1</span> <strong>同时启动两个 Agent：</strong><br>
+        · <strong>Agent A</strong>（Claude）：负责重构认证模块<br>
+        · <strong>Agent B</strong>（GPT-4o）：负责更新 API 测试
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>第2步</strong></td>
+      <td class="tool-cell">
+        <span class="step-num">2</span> Explore 汇报结构 → 主代理派 Build 开始重构
+      </td>
+      <td class="tool-cell">
+        <span class="step-num">2</span> Agent A 和 B <strong>同时工作</strong>，各自在独立 worktree 中操作<br>
+        · Agent A 改认证代码 · Agent B 改测试代码
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>第3步</strong></td>
+      <td class="tool-cell">
+        <span class="step-num">3</span> 重构完成 → 主代理派 General 更新测试
+      </td>
+      <td class="tool-cell">
+        <span class="step-num">3</span> Agent A 遇到问题 → 通过 Task Board 通知 Agent B 暂停<br>
+        Agent B 调整测试策略后继续
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>第4步</strong></td>
+      <td class="tool-cell">
+        <span class="step-num">4</span> 测试更新完 → 主代理汇总结果 → 完成
+      </td>
+      <td class="tool-cell">
+        <span class="step-num">4</span> 两个 Agent 各自完成 → 自动合并 worktree → 完成
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>总耗时</strong></td>
+      <td class="tool-cell"><span class="tag tag-red">4步串行 = 步骤之和</span></td>
+      <td class="tool-cell"><span class="tag tag-green">并行执行 ≈ 最长步骤的耗时</span></td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- 6.3 安装与配置 -->
+<h3 style="margin: 20px 0 10px 0; font-size: 16px; color: #1a237e;">Agent Teams 安装与配置</h3>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:120px;">步骤</th>
+      <th class="tool-col" style="width:430px;">命令 / 配置</th>
+      <th class="tool-col" style="width:430px;">说明</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td><strong>1. 安装插件</strong></td>
+      <td class="tool-cell"><span class="code-path">opencode plugin install @hueyexe/opencode-ensemble</span></td>
+      <td class="tool-cell">安装 opencode-ensemble 插件，这是目前最成熟的 Agent Teams 实现</td>
+    </tr>
+
+    <tr>
+      <td><strong>2. 配置 opencode.json</strong></td>
+      <td class="tool-cell">
+        <pre style="background:#f5f5f5; padding:8px; border-radius:4px; font-size:12px; overflow-x:auto; margin:0;"><code>{
+  "plugins": {
+    "@hueyexe/opencode-ensemble": {
+      "teams": {
+        "frontend": {
+          "model": "anthropic/claude-sonnet-4",
+          "worktree": true,
+          "task": "专注于前端代码修改"
+        },
+        "backend": {
+          "model": "openai/gpt-4o",
+          "worktree": true,
+          "task": "专注于后端 API 和数据库"
+        }
+      }
+    }
+  }
+}</code></pre>
+      </td>
+      <td class="tool-cell">
+        · <span class="code-path">model</span>：每个 Agent 可以用不同模型<br>
+        · <span class="code-path">worktree</span>：启用 Git Worktree 隔离<br>
+        · <span class="code-path">task</span>：定义 Agent 的职责范围
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>3. 启动团队</strong></td>
+      <td class="tool-cell"><span class="code-path">opencode run "重构认证模块" --team</span></td>
+      <td class="tool-cell">使用 <span class="code-path">--team</span> 参数启动团队协作模式</td>
+    </tr>
+
+    <tr>
+      <td><strong>4. 官方支持</strong></td>
+      <td class="tool-cell" colspan="2">
+        OpenCode 官方正在开发原生 Agent Teams 支持（<a href="https://github.com/anomalyco/opencode/pull/12711">PR #12711</a>），目前尚未合并。<br>
+        <strong>当前方案</strong>：使用 <span class="code-path">@hueyexe/opencode-ensemble</span> 社区插件<br>
+        <strong>未来方案</strong>：等官方 PR 合并后，Agent Teams 将成为 OpenCode 内置功能，无需插件
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- 6.4 对比总结 -->
+<div style="margin-top:16px; padding:14px 18px; background:#e8f5e9; border-left:4px solid #2e7d32; border-radius:4px; font-size:13px; color:#333; line-height:1.7;">
+  <strong>一句话总结：</strong><br>
+  <span class="tag tag-red">Subagent</span> = 主代理的<strong>临时工</strong>（串行、单向、一次性）—— 内置功能，日常够用<br>
+  <span class="tag tag-green">Agent Teams</span> = 组建<strong>正式项目组</strong>（并行、互通、持久）—— 需装插件，重型任务才需要<br><br>
+  <strong>你同事说的对：</strong>要用 Agent Teams 确实需要安装 <span class="code-path">@hueyexe/opencode-ensemble</span> 插件。但 OpenCode 官方 PR #12711 正在推进原生支持，未来可能不再需要插件。
+</div>
+
+<div class="footer-note">
+  <strong>新手上路三步：</strong><br>
+  ① <span class="cmd">opencode auth login</span> — 配置模型提供商的 API 密钥<br>
+  ② <span class="cmd">opencode</span> — 启动 TUI<br>
+  ③ <span class="cmd">/init</span> — 让 Agent 自动理解你的项目<br><br>
+  <strong>高频使用场景：</strong><br>
+  · 日常开发：<span class="cmd">opencode</span> → 直接对话<br>
+  · CI/CD 集成：<span class="cmd">opencode run "任务" --format json</span><br>
+  · 代码审查：<span class="cmd">/review</span> 或 <span class="cmd">opencode pr 42</span><br>
+  · 费用查看：<span class="cmd">opencode stats --days 7</span>
+</div>
+
+<div class="footer-note2">
+  <strong>数据来源（2026年4月）：</strong><br>
+  OpenCode 官方文档：<a href="https://opencode.ai/docs/cli/">opencode.ai/docs/cli</a> · <a href="https://opencode.ai/docs/tools/">opencode.ai/docs/tools</a> · <a href="https://opencode.ai/docs/agents/">opencode.ai/docs/agents</a><br>
+  GitHub 仓库深度分析：<a href="https://zread.ai/anomalyco/opencode/3-cli-commands-and-agents">zread.ai/anomalyco/opencode</a>（基于 anomalyco/opencode 源码解析）
+</div>
+
+</body>
+</html>

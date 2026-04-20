@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI Agent 核心架构图：理解 Agent 如何工作</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 30px;
+    color: #1a1a1a;
+  }
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #1a1a1a;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    background: #fff;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 1400px;
+    font-size: 13px;
+  }
+  thead th {
+    background: #1a237e;
+    color: #fff;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  thead th.tool-col {
+    background: #283593;
+    text-align: center;
+    border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  thead th.insight-col {
+    background: #004d40;
+    text-align: center;
+  }
+  tbody tr { border-bottom: 1px solid #eee; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafafa; }
+  tbody td {
+    padding: 10px 14px;
+    line-height: 1.6;
+    vertical-align: top;
+  }
+  tbody td:first-child {
+    font-weight: 700;
+    color: #1a237e;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .tool-cell {
+    border-left: 1px solid #f0f0f0;
+    text-align: left;
+  }
+  .insight-cell {
+    background: #e8f5e9;
+    text-align: left;
+  }
+  .tag {
+    display: inline-block;
+    background: #e8eaf6;
+    color: #1a237e;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 1px 1px;
+  }
+  .tag-green { background: #e8f5e9; color: #2e7d32; }
+  .tag-orange { background: #fff3e0; color: #e65100; }
+  .tag-blue { background: #e3f2fd; color: #1565c0; }
+  .tag-red { background: #ffebee; color: #c62828; }
+  .yes { color: #2e7d32; font-weight: 700; }
+  .no { color: #c62828; font-weight: 700; }
+  .highlight {
+    background: #e3f2fd;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .section-header td {
+    background: #f5f5f5;
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    padding: 8px 14px;
+    border-bottom: 1px solid #ddd;
+  }
+  .footer-note {
+    margin-top: 16px;
+    padding: 12px 18px;
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .footer-note2 {
+    margin-top: 10px;
+    padding: 12px 18px;
+    background: #e3f2fd;
+    border-left: 4px solid #1565c0;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .code-path {
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 11px;
+    background: #f5f5f5;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #333;
+  }
+  small { font-size: 11px; color: #888; }
+  .img-link {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 4px 10px;
+    background: #e8eaf6;
+    color: #1a237e;
+    border-radius: 4px;
+    font-size: 11px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .img-link:hover { background: #c5cae9; }
+  .step-num {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: #1a237e;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .diagram-box {
+    background: #fafbff;
+    border: 1px solid #e0e4f0;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
+  }
+  .diagram-box svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<h1>AI Agent 核心架构图：4张图理解 Agent 如何工作</h1>
+<p class="subtitle">从全局架构 → 工作循环 → 工程实现 → 范式对比 | 所有图片内嵌，离线可用</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:70px;">顺序</th>
+      <th style="width:160px;">图名</th>
+      <th class="tool-col" style="width:420px;">架构图（内嵌SVG，无需网络）</th>
+      <th class="tool-col" style="width:300px;">图讲的是什么</th>
+      <th class="insight-col" style="width:300px;">为什么选这张图 & 培训话术</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- ==================== 图1：Agent Framework ==================== -->
+    <tr>
+      <td><span class="step-num">1</span><br><small>开场</small></td>
+      <td>
+        <strong>LLM Agent 整体架构</strong><br>
+        <span class="tag">整体架构</span><br>
+        <small>培训开场首选</small>
+      </td>
+      <td class="tool-cell">
+        <div class="diagram-box">
+        <svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg">
+          <!-- 背景 -->
+          <rect x="0" y="0" width="560" height="320" fill="#f8f9ff" rx="8"/>
+
+          <!-- User -->
+          <rect x="30" y="20" width="100" height="44" rx="22" fill="#ff9800" opacity="0.9"/>
+          <text x="80" y="47" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">User 用户</text>
+
+          <!-- Arrow: User → Agent -->
+          <line x1="130" y1="42" x2="185" y2="42" stroke="#ff9800" stroke-width="2" marker-end="url(#arrow-orange)"/>
+          <defs><marker id="arrow-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#ff9800"/></marker></defs>
+
+          <!-- Agent/Brain (center) -->
+          <rect x="190" y="14" width="180" height="58" rx="10" fill="#1a237e"/>
+          <text x="280" y="38" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">Agent / Brain</text>
+          <text x="280" y="56" text-anchor="middle" fill="#c5cae9" font-size="11">LLM 作为主控制器（大脑）</text>
+
+          <!-- Arrow: Agent → Planning -->
+          <path d="M220,72 L220,95 L100,95 L100,115" stroke="#1565c0" stroke-width="2" fill="none" marker-end="url(#arrow-blue)"/>
+          <defs><marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#1565c0"/></marker></defs>
+
+          <!-- Arrow: Agent → Memory -->
+          <line x1="280" y1="72" x2="280" y2="115" stroke="#2e7d32" stroke-width="2" marker-end="url(#arrow-green)"/>
+          <defs><marker id="arrow-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#2e7d32"/></marker></defs>
+
+          <!-- Arrow: Agent → Tools -->
+          <path d="M340,72 L340,95 L460,95 L460,115" stroke="#c62828" stroke-width="2" fill="none" marker-end="url(#arrow-red)"/>
+          <defs><marker id="arrow-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#c62828"/></marker></defs>
+
+          <!-- Planning box -->
+          <rect x="22" y="118" width="156" height="80" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+          <text x="100" y="142" text-anchor="middle" fill="#1565c0" font-size="14" font-weight="700">Planning 规划</text>
+          <text x="100" y="160" text-anchor="middle" fill="#555" font-size="11">CoT 思维链</text>
+          <text x="100" y="176" text-anchor="middle" fill="#555" font-size="11">ToT 思维树</text>
+          <text x="100" y="192" text-anchor="middle" fill="#888" font-size="10">任务拆解为子任务</text>
+
+          <!-- Memory box -->
+          <rect x="202" y="118" width="156" height="80" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+          <text x="280" y="142" text-anchor="middle" fill="#2e7d32" font-size="14" font-weight="700">Memory 记忆</text>
+          <text x="280" y="160" text-anchor="middle" fill="#555" font-size="11">短期：上下文窗口</text>
+          <text x="280" y="176" text-anchor="middle" fill="#555" font-size="11">长期：向量数据库</text>
+          <text x="280" y="192" text-anchor="middle" fill="#888" font-size="10">记住做过的事</text>
+
+          <!-- Tools box -->
+          <rect x="382" y="118" width="156" height="80" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+          <text x="460" y="142" text-anchor="middle" fill="#c62828" font-size="14" font-weight="700">Tools 工具</text>
+          <text x="460" y="160" text-anchor="middle" fill="#555" font-size="11">搜索 API / 数据库</text>
+          <text x="460" y="176" text-anchor="middle" fill="#555" font-size="11">代码执行器 / MCP</text>
+          <text x="460" y="192" text-anchor="middle" fill="#888" font-size="10">动手干活的能力</text>
+
+          <!-- Return arrow: Agent → User -->
+          <line x1="370" y1="42" x2="470" y2="42" stroke="#888" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <line x1="470" y1="42" x2="470" y2="72" stroke="#888" stroke-width="1.5"/>
+          <line x1="470" y1="72" x2="80" y2="72" stroke="#888" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <line x1="80" y1="72" x2="80" y2="64" stroke="#888" stroke-width="1.5" marker-end="url(#arrow-gray)"/>
+          <defs><marker id="arrow-gray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#888"/></marker></defs>
+          <text x="490" y="40" fill="#888" font-size="10">Final Answer</text>
+
+          <!-- Bottom summary -->
+          <rect x="30" y="220" width="500" height="44" rx="6" fill="#fff3e0" stroke="#ff9800" stroke-width="1"/>
+          <text x="280" y="239" text-anchor="middle" fill="#e65100" font-size="12" font-weight="600">Agent = LLM（大脑） + Planning（规划） + Memory（记忆） + Tools（工具）</text>
+          <text x="280" y="256" text-anchor="middle" fill="#888" font-size="10">四者缺一个都不叫 Agent —— 本质是让 LLM 从"只会动嘴"变成"能动手干活"</text>
+
+          <!-- External world -->
+          <rect x="382" y="218" width="156" height="30" rx="6" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>
+          <text x="460" y="238" text-anchor="middle" fill="#666" font-size="11">External World 外部世界</text>
+          <line x1="460" y1="198" x2="460" y2="218" stroke="#ccc" stroke-width="1" stroke-dasharray="3,2"/>
+
+          <!-- Legend -->
+          <rect x="30" y="280" width="500" height="30" rx="4" fill="none"/>
+          <circle cx="60" cy="295" r="6" fill="#ff9800"/><text x="74" y="299" fill="#555" font-size="10">用户交互</text>
+          <circle cx="160" cy="295" r="6" fill="#1a237e"/><text x="174" y="299" fill="#555" font-size="10">LLM大脑</text>
+          <circle cx="260" cy="295" r="6" fill="#1565c0"/><text x="274" y="299" fill="#555" font-size="10">规划</text>
+          <circle cx="330" cy="295" r="6" fill="#2e7d32"/><text x="344" y="299" fill="#555" font-size="10">记忆</text>
+          <circle cx="400" cy="295" r="6" fill="#c62828"/><text x="414" y="299" fill="#555" font-size="10">工具</text>
+          <line x1="460" y1="295" x2="490" y2="295" stroke="#888" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <text x="496" y="299" fill="#555" font-size="10">返回</text>
+        </svg>
+        </div>
+        <small>上图为本地图，无需网络即可显示</small>
+      </td>
+      <td class="tool-cell">
+        <strong>Agent 不是 LLM，Agent = LLM + 四大模块：</strong><br><br>
+        <span class="highlight">User Request</span> — 用户提出问题/需求<br>
+        <span class="highlight">Agent/Brain</span> — LLM 作为主控制器（大脑），协调一切<br>
+        <span class="highlight">Planning</span> — 将复杂任务拆解为子任务（CoT、ToT）<br>
+        <span class="highlight">Memory</span> — 短期记忆（上下文）+ 长期记忆（向量数据库）<br>
+        <span class="highlight">Tools</span> — 外部工具（搜索API、代码执行器、数据库）<br><br>
+        <small>Agent 的本质是让 LLM 从"只会动嘴"变成"能动手干活"的系统</small>
+      </td>
+      <td class="insight-cell">
+        <strong>培训开场首选图。</strong>先建立全局认知，让同事明白：<br><br>
+        "Agent 不是 ChatGPT 升级版。ChatGPT 只会动嘴（生成文本），Agent 有大脑（LLM）、能规划（Planning）、能记住（Memory）、还能动手（Tools）。<strong>四者缺一个都不叫 Agent。</strong>"<br><br>
+        <span class="tag tag-green">适合开场</span> 一张图讲清 Agent 全貌
+      </td>
+    </tr>
+
+    <!-- ==================== 图2：Thought-Action-Observation Cycle ==================== -->
+    <tr>
+      <td><span class="step-num">2</span><br><small>深入</small></td>
+      <td>
+        <strong>Thought-Action-Observation 循环</strong><br>
+        <span class="tag tag-green">核心循环</span><br>
+        <small>培训核心环节</small>
+      </td>
+      <td class="tool-cell">
+        <div class="diagram-box">
+        <svg viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="560" height="380" fill="#f8f9ff" rx="8"/>
+
+          <!-- User input -->
+          <rect x="200" y="12" width="160" height="36" rx="18" fill="#ff9800" opacity="0.9"/>
+          <text x="280" y="35" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">User: "纽约天气如何？"</text>
+
+          <!-- Arrow down -->
+          <line x1="280" y1="48" x2="280" y2="70" stroke="#1a237e" stroke-width="2" marker-end="url(#a2-navy)"/>
+          <defs><marker id="a2-navy" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#1a237e"/></marker></defs>
+
+          <!-- Step 1: Thought -->
+          <rect x="150" y="72" width="260" height="40" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+          <text x="170" y="89" fill="#1565c0" font-size="11" font-weight="700">Thought ①</text>
+          <text x="170" y="104" fill="#555" font-size="11">"我需要调用天气API来查纽约的天气"</text>
+
+          <!-- Arrow down -->
+          <line x1="280" y1="112" x2="280" y2="128" stroke="#1a237e" stroke-width="2" marker-end="url(#a2-navy)"/>
+
+          <!-- Step 2: Action -->
+          <rect x="130" y="130" width="300" height="40" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="1.5"/>
+          <text x="150" y="147" fill="#e65100" font-size="11" font-weight="700">Action ②</text>
+          <text x="150" y="162" fill="#555" font-size="11">调用工具: get_weather("New York")</text>
+
+          <!-- Arrow down -->
+          <line x1="280" y1="170" x2="280" y2="186" stroke="#1a237e" stroke-width="2" marker-end="url(#a2-navy)"/>
+
+          <!-- Step 3: Observation -->
+          <rect x="120" y="188" width="320" height="40" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+          <text x="140" y="205" fill="#2e7d32" font-size="11" font-weight="700">Observation ③</text>
+          <text x="140" y="220" fill="#555" font-size="11">工具返回: "15°C, 多云, 湿度60%"</text>
+
+          <!-- Loop arrow back to thought -->
+          <path d="M120,208 L50,208 L50,92 L150,92" stroke="#1a237e" stroke-width="2" fill="none" marker-end="url(#a2-navy)"/>
+          <text x="16" y="155" fill="#1a237e" font-size="10" font-weight="600" transform="rotate(-90,16,155)">循环</text>
+
+          <!-- Arrow down to thought 2 -->
+          <line x1="280" y1="228" x2="280" y2="244" stroke="#1a237e" stroke-width="2" marker-end="url(#a2-navy)"/>
+
+          <!-- Step 4: Thought 2 -->
+          <rect x="150" y="246" width="260" height="40" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+          <text x="170" y="263" fill="#1565c0" font-size="11" font-weight="700">Thought ④</text>
+          <text x="170" y="278" fill="#555" font-size="11">"数据够了，可以回答用户了"</text>
+
+          <!-- Arrow down -->
+          <line x1="280" y1="286" x2="280" y2="302" stroke="#1a237e" stroke-width="2" marker-end="url(#a2-navy)"/>
+
+          <!-- Final Answer -->
+          <rect x="140" y="304" width="280" height="40" rx="8" fill="#1a237e"/>
+          <text x="160" y="321" fill="#c5cae9" font-size="11">Final Answer ⑤</text>
+          <text x="160" y="336" fill="#fff" font-size="12" font-weight="600">"纽约现在15°C，多云，湿度60%"</text>
+
+          <!-- Loop indicator on right -->
+          <rect x="440" y="72" width="100" height="200" rx="6" fill="none" stroke="#1a237e" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <text x="490" y="165" text-anchor="middle" fill="#1a237e" font-size="11" font-weight="600">Agent</text>
+          <text x="490" y="180" text-anchor="middle" fill="#1a237e" font-size="11" font-weight="600">Loop</text>
+          <text x="490" y="200" text-anchor="middle" fill="#888" font-size="9">循环直到</text>
+          <text x="490" y="212" text-anchor="middle" fill="#888" font-size="9">任务完成</text>
+
+          <!-- Legend -->
+          <rect x="100" y="356" width="360" height="20" rx="4" fill="none"/>
+          <circle cx="120" cy="366" r="4" fill="#1565c0"/><text x="130" y="370" fill="#555" font-size="9">Thought 思考</text>
+          <circle cx="220" cy="366" r="4" fill="#ff9800"/><text x="230" y="370" fill="#555" font-size="9">Action 行动</text>
+          <circle cx="320" cy="366" r="4" fill="#2e7d32"/><text x="330" y="370" fill="#555" font-size="9">Observation 观察</text>
+          <circle cx="440" cy="366" r="4" fill="#1a237e"/><text x="450" y="370" fill="#555" font-size="9">最终答案</text>
+        </svg>
+        </div>
+        <small>以"查天气"为例展示 Agent 循环</small>
+      </td>
+      <td class="tool-cell">
+        <strong>Agent 的核心工作方式——永不停止的循环：</strong><br><br>
+        <span class="highlight">Thought（思考）</span> — LLM 内部推理："用户要什么？我该用哪个工具？"<br>
+        <span class="highlight">Action（行动）</span> — 调用工具（API、数据库、代码执行器）<br>
+        <span class="highlight">Observation（观察）</span> — 收到工具返回的结果<br><br>
+        <strong>举例：用户问"纽约天气如何？"</strong><br>
+        ① Thought: "我需要查天气API"<br>
+        ② Action: 调用 <span class="code-path">get_weather("New York")</span><br>
+        ③ Observation: "15°C, 多云, 湿度60%"<br>
+        ④ Thought: "数据够了，可以回答了"<br>
+        ⑤ Final Answer: "纽约现在15°C，多云..."<br><br>
+        <small>循环持续到任务完成。这就是 Agent 比 ChatGPT 强的根本原因</small>
+      </td>
+      <td class="insight-cell">
+        <strong>培训核心图，配合"查天气"例子讲解。</strong><br><br>
+        "Agent 不是一问一答，它是一个<strong>思考→行动→观察的循环</strong>。就像你排查线上bug——先想可能的原因（Thought），然后去查日志（Action），看到报错信息（Observation），再想下一步怎么查——<strong>Agent 干的跟你一模一样，只是速度快100倍</strong>。"<br><br>
+        <span class="tag tag-green">HuggingFace 课程</span> 同样的 ReAct 循环概念
+      </td>
+    </tr>
+
+    <!-- ==================== 图3：Agent Loop 工程实现 ==================== -->
+    <tr>
+      <td><span class="step-num">3</span><br><small>工程化</small></td>
+      <td>
+        <strong>Agent Loop 工程实现</strong><br>
+        <span class="tag tag-blue">工程实现</span><br>
+        <small>代码级工作流</small>
+      </td>
+      <td class="tool-cell">
+        <div class="diagram-box">
+        <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="560" height="400" fill="#f8f9ff" rx="8"/>
+
+          <!-- User Input -->
+          <rect x="30" y="15" width="120" height="36" rx="18" fill="#ff9800" opacity="0.9"/>
+          <text x="90" y="38" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">User Input</text>
+          <line x1="150" y1="33" x2="195" y2="33" stroke="#ff9800" stroke-width="2" marker-end="url(#a3-orange)"/>
+          <defs><marker id="a3-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#ff9800"/></marker></defs>
+
+          <!-- Prompt Assembly -->
+          <rect x="200" y="10" width="340" height="50" rx="8" fill="#e8eaf6" stroke="#1a237e" stroke-width="1.5"/>
+          <text x="220" y="30" fill="#1a237e" font-size="12" font-weight="700">Prompt 组装</text>
+          <text x="220" y="48" fill="#555" font-size="10">System 指令 + Tools 定义 + 历史对话 + 用户输入</text>
+
+          <!-- Arrow -->
+          <line x1="370" y1="60" x2="370" y2="82" stroke="#1a237e" stroke-width="2" marker-end="url(#a3-navy)"/>
+          <defs><marker id="a3-navy" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#1a237e"/></marker></defs>
+
+          <!-- LLM Inference -->
+          <rect x="230" y="84" width="280" height="44" rx="10" fill="#1a237e"/>
+          <text x="370" y="102" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">LLM Inference 推理</text>
+          <text x="370" y="120" text-anchor="middle" fill="#c5cae9" font-size="10">发送给大模型，等待响应</text>
+
+          <!-- Arrow down to decision -->
+          <line x1="370" y1="128" x2="370" y2="152" stroke="#1a237e" stroke-width="2" marker-end="url(#a3-navy)"/>
+
+          <!-- Decision diamond -->
+          <polygon points="370,154 460,194 370,234 280,194" fill="#fff3e0" stroke="#ff9800" stroke-width="1.5"/>
+          <text x="370" y="189" text-anchor="middle" fill="#e65100" font-size="11" font-weight="600">输出类型？</text>
+          <text x="370" y="202" text-anchor="middle" fill="#e65100" font-size="9">判断</text>
+
+          <!-- Left: Tool Call -->
+          <line x1="280" y1="194" x2="160" y2="194" stroke="#c62828" stroke-width="2" marker-end="url(#a3-red)"/>
+          <defs><marker id="a3-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#c62828"/></marker></defs>
+          <text x="220" y="188" text-anchor="middle" fill="#c62828" font-size="10" font-weight="600">Tool Call</text>
+
+          <!-- Tool Execution box -->
+          <rect x="30" y="170" width="130" height="50" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+          <text x="95" y="190" text-anchor="middle" fill="#c62828" font-size="11" font-weight="700">工具执行</text>
+          <text x="95" y="205" text-anchor="middle" fill="#555" font-size="9">bash / API / MCP</text>
+
+          <!-- Tool Result -->
+          <line x1="95" y1="220" x2="95" y2="250" stroke="#c62828" stroke-width="2" marker-end="url(#a3-red)"/>
+
+          <rect x="20" y="252" width="150" height="40" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+          <text x="95" y="270" text-anchor="middle" fill="#2e7d32" font-size="10" font-weight="600">Tool Result</text>
+          <text x="95" y="284" text-anchor="middle" fill="#555" font-size="9">结果追加回 Prompt</text>
+
+          <!-- Loop back arrow: Tool Result → Prompt Assembly -->
+          <path d="M20,272 L10,272 L10,35 L200,35" stroke="#c62828" stroke-width="1.5" fill="none" marker-end="url(#a3-red)" stroke-dasharray="5,3"/>
+          <text x="5" y="155" fill="#c62828" font-size="9" font-weight="600" transform="rotate(-90,5,155)">重新推理</text>
+
+          <!-- Right: Assistant Message (final) -->
+          <line x1="460" y1="194" x2="500" y2="194" stroke="#2e7d32" stroke-width="2" marker-end="url(#a3-green)"/>
+          <defs><marker id="a3-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#2e7d32"/></marker></defs>
+          <text x="475" y="188" text-anchor="middle" fill="#2e7d32" font-size="9" font-weight="600">Message</text>
+
+          <!-- Final Response -->
+          <rect x="410" y="240" width="140" height="40" rx="8" fill="#2e7d32"/>
+          <text x="480" y="258" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Final Response</text>
+          <text x="480" y="272" text-anchor="middle" fill="#c8e6c9" font-size="9">循环结束，回复用户</text>
+          <line x1="480" y1="234" x2="480" y2="240" stroke="#2e7d32" stroke-width="2"/>
+          <line x1="500" y1="194" x2="540" y2="194" stroke="#2e7d32" stroke-width="1.5"/>
+          <line x1="540" y1="194" x2="540" y2="252" stroke="#2e7d32" stroke-width="1.5"/>
+          <line x1="540" y1="252" x2="550" y2="252" stroke="#2e7d32" stroke-width="1.5"/>
+
+          <!-- Context box -->
+          <rect x="30" y="310" width="500" height="36" rx="6" fill="#fff8e1" stroke="#ffc107" stroke-width="1"/>
+          <text x="280" y="328" text-anchor="middle" fill="#f57f17" font-size="11" font-weight="600">⚠ 每轮循环 Prompt 越来越长（上下文膨胀） → 需要 Compaction 压缩 / Context Window 管理</text>
+
+          <!-- Round counter -->
+          <rect x="200" y="356" width="160" height="28" rx="14" fill="#e8eaf6" stroke="#1a237e" stroke-width="1"/>
+          <text x="280" y="374" text-anchor="middle" fill="#1a237e" font-size="10" font-weight="600">一次回答可能跑 5~10 轮</text>
+        </svg>
+        </div>
+        <small>展示 Agent Loop 的真实代码级工作流</small>
+      </td>
+      <td class="tool-cell">
+        <strong>Agent 内部到底发生了什么——工程实现层面：</strong><br><br>
+        <span class="highlight">User Input</span> — 用户输入指令<br>
+        <span class="highlight">Agent 组装 Prompt</span> — 将 System 指令 + Tools 定义 + 历史对话 + 用户输入组装成完整 Prompt<br>
+        <span class="highlight">Model Inference</span> — 发送给 LLM 进行推理<br>
+        <span class="highlight">判断输出类型</span>：<br>
+        &nbsp;&nbsp;① 返回 Assistant Message → 循环结束，回复用户<br>
+        &nbsp;&nbsp;② 请求 Tool Call → 执行工具，结果追加回 Prompt → 重新 Inference<br><br>
+        <strong>关键工程细节：</strong><br>
+        · Prompt 会随着对话越来越长（上下文膨胀）<br>
+        · 需要 Context Window 管理（压缩/compaction）<br>
+        · Prompt Caching 可以让后续请求更快更省<br>
+        <small>这张图展示了 Agent Loop 的真实代码级工作流</small>
+      </td>
+      <td class="insight-cell">
+        <strong>揭示 Agent 内部真实工作原理。</strong><br><br>
+        "前面两张图讲了概念，这张图讲<strong>真实的工程实现</strong>。你看到的 Agent 每次回答，背后可能已经跑了 5 轮、10 轮 LLM 推理。每一轮都要组装 Prompt、调用模型、判断是否需要工具——这就是为什么 Agent 比 ChatGPT 贵，也为什么 Agent 比 ChatGPT 强。"<br><br>
+        <span class="tag tag-blue">适合技术深入</span> 理解 Agent 的真实成本和性能
+      </td>
+    </tr>
+
+    <!-- ==================== 图4：ReAct 范式对比 ==================== -->
+    <tr>
+      <td><span class="step-num">4</span><br><small>对比</small></td>
+      <td>
+        <strong>ReAct vs 普通 LLM</strong><br>
+        <span class="tag tag-orange">范式对比</span><br>
+        <small>培训收尾环节</small>
+      </td>
+      <td class="tool-cell">
+        <div class="diagram-box">
+        <svg viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="560" height="380" fill="#f8f9ff" rx="8"/>
+
+          <!-- Title -->
+          <text x="280" y="24" text-anchor="middle" fill="#1a237e" font-size="14" font-weight="700">ReAct = Reasoning + Acting（推理 + 行动）</text>
+
+          <!-- Left: Normal ChatGPT -->
+          <rect x="20" y="40" width="240" height="320" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+          <text x="140" y="62" text-anchor="middle" fill="#c62828" font-size="13" font-weight="700">普通 ChatGPT</text>
+          <text x="140" y="78" text-anchor="middle" fill="#c62828" font-size="10">直接生成答案，可能编造</text>
+
+          <!-- ChatGPT flow -->
+          <rect x="45" y="95" width="190" height="34" rx="6" fill="#ff9800" opacity="0.8"/>
+          <text x="140" y="117" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">用户提问</text>
+
+          <line x1="140" y1="129" x2="140" y2="148" stroke="#c62828" stroke-width="1.5" marker-end="url(#a4-red)"/>
+          <defs><marker id="a4-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#c62828"/></marker></defs>
+
+          <rect x="45" y="150" width="190" height="34" rx="6" fill="#fff" stroke="#c62828" stroke-width="1"/>
+          <text x="140" y="172" text-anchor="middle" fill="#c62828" font-size="11" font-weight="600">LLM 直接生成</text>
+
+          <line x1="140" y1="184" x2="140" y2="203" stroke="#c62828" stroke-width="1.5" marker-end="url(#a4-red)"/>
+
+          <rect x="45" y="205" width="190" height="34" rx="6" fill="#ef5350"/>
+          <text x="140" y="224" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">输出答案（可能错误）</text>
+          <text x="140" y="236" text-anchor="middle" fill="#ffcdd2" font-size="9">没有验证环节</text>
+
+          <!-- Warning -->
+          <rect x="45" y="255" width="190" height="46" rx="6" fill="#fff" stroke="#ef5350" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="140" y="272" text-anchor="middle" fill="#c62828" font-size="10" font-weight="600">幻觉！编造！不准确！</text>
+          <text x="140" y="290" text-anchor="middle" fill="#888" font-size="9">因为没有任何查证环节</text>
+
+          <!-- Right: ReAct Agent -->
+          <rect x="300" y="40" width="240" height="320" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+          <text x="420" y="62" text-anchor="middle" fill="#2e7d32" font-size="13" font-weight="700">ReAct Agent</text>
+          <text x="420" y="78" text-anchor="middle" fill="#2e7d32" font-size="10">先思考再查证，基于事实回答</text>
+
+          <!-- ReAct flow -->
+          <rect x="325" y="95" width="190" height="28" rx="6" fill="#ff9800" opacity="0.8"/>
+          <text x="420" y="114" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">用户提问</text>
+
+          <line x1="420" y1="123" x2="420" y2="138" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#a4-green)"/>
+          <defs><marker id="a4-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#2e7d32"/></marker></defs>
+
+          <!-- Thought -->
+          <rect x="325" y="140" width="190" height="24" rx="4" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+          <text x="420" y="157" text-anchor="middle" fill="#1565c0" font-size="10" font-weight="600">Thought: "我该查哪个工具？"</text>
+
+          <line x1="420" y1="164" x2="420" y2="174" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#a4-green)"/>
+
+          <!-- Action -->
+          <rect x="325" y="176" width="190" height="24" rx="4" fill="#fff3e0" stroke="#ff9800" stroke-width="1"/>
+          <text x="420" y="193" text-anchor="middle" fill="#e65100" font-size="10" font-weight="600">Action: 调用工具查证</text>
+
+          <line x1="420" y1="200" x2="420" y2="210" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#a4-green)"/>
+
+          <!-- Observation -->
+          <rect x="325" y="212" width="190" height="24" rx="4" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+          <text x="420" y="229" text-anchor="middle" fill="#2e7d32" font-size="10" font-weight="600">Observation: 获取真实数据</text>
+
+          <!-- Loop indicator -->
+          <path d="M515,224 L530,224 L530,152 L515,152" stroke="#2e7d32" stroke-width="1" fill="none" marker-end="url(#a4-green)" stroke-dasharray="3,2"/>
+          <text x="535" y="190" fill="#2e7d32" font-size="8" font-weight="600">循环</text>
+
+          <line x1="420" y1="236" x2="420" y2="250" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#a4-green)"/>
+
+          <!-- Answer -->
+          <rect x="325" y="252" width="190" height="34" rx="6" fill="#2e7d32"/>
+          <text x="420" y="270" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">基于事实的准确答案</text>
+          <text x="420" y="282" text-anchor="middle" fill="#c8e6c9" font-size="9">有验证，有据可查</text>
+
+          <!-- Checkmark -->
+          <rect x="325" y="300" width="190" height="46" rx="6" fill="#fff" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="420" y="317" text-anchor="middle" fill="#2e7d32" font-size="10" font-weight="600">可靠！准确！有依据！</text>
+          <text x="420" y="335" text-anchor="middle" fill="#888" font-size="9">每个结论都经过工具验证</text>
+
+          <!-- VS in middle -->
+          <text x="280" y="200" text-anchor="middle" fill="#1a237e" font-size="16" font-weight="900">VS</text>
+        </svg>
+        </div>
+        <small>对比普通 LLM 和 ReAct Agent 的核心差异</small>
+      </td>
+      <td class="tool-cell">
+        <strong>ReAct——当前所有主流 Agent 的底层范式：</strong><br><br>
+        ReAct = <strong>Re</strong>asoning + <strong>Act</strong>ing（推理 + 行动）<br><br>
+        与普通 LLM 调用的区别：<br>
+        <span class="tag tag-red">普通 ChatGPT</span> 直接生成答案（可能编造）<br>
+        <span class="tag tag-green">ReAct Agent</span> 先思考 → 再用工具查证 → 基于事实回答<br><br>
+        <strong>核心循环：</strong><br>
+        Question → Thought → Action → Observation → ... → Answer<br><br>
+        <small>2022 年提出的范式，现在 Claude Code、Copilot、OpenCode 的底层都是 ReAct</small>
+      </td>
+      <td class="insight-cell">
+        <strong>收尾对比图，解释为什么 Agent 不会瞎编。</strong><br><br>
+        "ChatGPT 直接回答，没有验证环节，所以会幻觉。Agent 用的是 ReAct 模式——<strong>先想（Thought），再动手查（Action），看到真实结果（Observation），基于事实回答</strong>。这就是为什么 Agent 比 ChatGPT 可靠得多。Claude Code、Copilot、OpenCode，底层都是这套 ReAct 循环。"<br><br>
+        <span class="tag tag-orange">适合收尾</span> 把三个工具统一到同一个底层范式
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<div class="footer-note">
+  <strong>培训建议顺序：</strong><br>
+  <span class="step-num" style="vertical-align:middle;">1</span> <strong>开场</strong>：用图1建立全局认知——Agent = LLM + 规划 + 记忆 + 工具<br>
+  <span class="step-num" style="vertical-align:middle;">2</span> <strong>核心</strong>：用图2讲 Thought→Action→Observation 循环，配合"查天气"例子<br>
+  <span class="step-num" style="vertical-align:middle;">3</span> <strong>深入</strong>：用图3揭示 Agent 内部工程实现——Prompt 组装、Inference、Tool Call 循环<br>
+  <span class="step-num" style="vertical-align:middle;">4</span> <strong>收尾</strong>：用图4讲 ReAct 范式对比，统一理解三个工具的底层共性
+</div>
+
+<div class="footer-note2">
+  <strong>关于图片：</strong><br>
+  所有架构图均为<strong>内嵌 SVG 矢量图</strong>，无需网络即可显示，适合国内网络环境。<br>
+  理论来源：<a href="https://www.promptingguide.ai/research/llm-agents">Prompt Engineering Guide: LLM Agents</a> ·
+  <a href="https://www.promptingguide.ai/techniques/react">ReAct</a> ·
+  <a href="https://zhuanlan.zhihu.com/p/1968071452067620000">知乎：AI Agent模式全景图</a> ·
+  <a href="https://developer.volcengine.com/articles/7384648672933642279">火山引擎：Agent九种设计模式</a>
+</div>
+
+</body>
+</html>
